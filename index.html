@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production and Cost Explorer</title>
+<!--
+  Production and Cost Explorer (Topic 6, Theory of the Firm).
+  Standalone page, no internet needed: open it in any browser.
+  Two tables, as in Mankiw ch. 13 (Table 1 production and total cost; Table 2 the cost table)
+  and as in the Topic 6 deck and worksheet:
+  Story: your factory, a hypothetical CMT garment workshop sewing basic T-shirts (was Campus Boba until 2026-11-05).
+  - Table 1, the sewing line: L = 0..6, Q = 0/20/50/72/88/100/108 T-shirts per hour; FC 60 per hour,
+    wage 30 per worker per hour -> TC = 60, 90, ..., 240 ('000 VND).
+    MP = 20, 30, 22, 16, 12, 8; AP = 20, 25, 24, 22, 20, 18.
+  - Table 2, the cost table: Q = 0..8 dozen T-shirts per hour, TC = 60, 74, 84, 93, 108, 130, 162, 210, 280, FC 60
+    -> AVC 14/12/11/12/14/17/21.4/27.5, ATC 74/42/31/27/26/27/30/35, MC 14/10/9/15/22/32/48/70 (efficient scale Q = 5).
+    Rows Q = 7 and 8 added 2026-11-10 (same as the Topic 6 deck) so the U-shape shows clearly.
+  Graphs 1-3 and the "From production to cost" tab use Table 1; graph 4 uses Table 2.
+  Fill in the tables and the graphs draw and connect the points as you type.
+  All numbers are hypothetical. Colors follow the worksheet: MC red, ATC orange, AVC green,
+  AFC gray (no blue: blue is demand). MP uses MC's color and AP uses AVC's color (MC = w/MP, AVC = w/AP).
+  Source: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 13. Cengage.
+-->
+<style>
+:root{
+  --bg:#f7f6f3; --surface:#fcfcfb; --ink:#1d1d1b; --ink2:#55534e; --muted:#8a877f;
+  --line:#dedbd3; --grid:#ebe8e1; --accent:#7a1f2b;
+  --prod:#2b2a27; --mc:#c62828; --atc:#d97706; --avc:#2e7d32; --afc:#6b7280;
+  --ok:#e3f1e4; --bad:#fbe3e1; --sel:#f3eee2; --input:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+    --line:#34332f; --grid:#262523; --accent:#e8a0a8;
+    --prod:#e6e4de; --mc:#f0524f; --atc:#d18a10; --avc:#23a356; --afc:#8a8f98;
+    --ok:#1d3322; --bad:#3d1f1d; --sel:#2a2823; --input:#222220;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+  --line:#34332f; --grid:#262523; --accent:#e8a0a8;
+  --prod:#e6e4de; --mc:#f0524f; --atc:#d18a10; --avc:#23a356; --afc:#8a8f98;
+  --ok:#1d3322; --bad:#3d1f1d; --sel:#2a2823; --input:#222220;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Source Sans 3","Source Sans Pro","Segoe UI",system-ui,sans-serif}
+header{padding:14px 20px 10px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline}
+h1{font-size:20px;margin:0;font-weight:700}
+header p{margin:0;color:var(--ink2);font-size:14px}
+.theme{margin-left:auto}
+main{display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);gap:16px;padding:16px 20px}
+@media (max-width:1100px){main{grid-template-columns:1fr}}
+@media (max-width:600px){main{padding:12px 16px}header{padding:12px 16px}}
+.left{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:16px;margin:0 0 6px}
+.card h2 small{font-weight:400;color:var(--ink2);font-size:13.5px}
+.params{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:8px;font-size:14px}
+.params label{display:flex;gap:6px;align-items:center;color:var(--ink2)}
+.params input[type=number]{width:72px}
+input[type=number],input.cell{font:inherit;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:5px;padding:3px 5px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+button[aria-pressed=true]{background:var(--sel);border-color:var(--muted);font-weight:600}
+button.mini{padding:2px 8px;font-size:12.5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{font-weight:600;color:var(--ink2);padding:4px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+th small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+td{padding:2px;text-align:center;border-bottom:1px solid var(--grid)}
+td.sep,th.sep{border-left:2px solid var(--line)}
+input.cell{width:100%;min-width:38px;text-align:center;padding:3px 1px}
+input.cell:disabled{background:transparent;border-color:transparent;color:var(--muted)}
+input.cell[readonly]{background:transparent;border-color:transparent}
+input.cell.ok{background:var(--ok)}
+input.cell.bad{background:var(--bad);border-color:var(--mc)}
+tr.hl td{background:var(--sel)}
+.note{font-size:13px;color:var(--ink2);margin:8px 0 0}
+.status{font-size:13.5px;margin-top:6px;min-height:20px;color:var(--ink2)}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr}}
+.grid4.one{grid-template-columns:minmax(0,860px);justify-content:center}
+.plot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 4px;position:relative}
+.plot[hidden]{display:none}
+.plot h3{font-size:14px;margin:2px 30px 2px 4px;font-weight:600}
+.plot h3 small{font-weight:400;color:var(--muted)}
+.hidebtn{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;line-height:1;font-size:17px;color:var(--muted);border-color:transparent;background:transparent}
+.hidebtn:hover{color:var(--ink);border-color:var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--ink2);margin:0 4px 2px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--ink2);font-size:12px;font-family:inherit}
+svg .axis{stroke:var(--muted);stroke-width:1}
+svg .gridl{stroke:var(--grid);stroke-width:1}
+svg .lbl{fill:var(--ink);font-weight:600;font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:4px 8px;border-radius:6px;white-space:nowrap;display:none;z-index:5}
+.rot-controls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 8px}
+.rot-controls input[type=range]{width:220px;max-width:100%}
+.caption{font-size:15px;min-height:44px;margin:4px 0 0;color:var(--ink)}
+.caption b{color:var(--accent)}
+.small{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Production and Cost Explorer</h1>
+  <p>Your factory (a CMT garment workshop): fill in the tables and watch the curves draw themselves. Money in '000 VND per hour.</p>
+  <div class="theme seg" role="group" aria-label="Theme">
+    <button data-theme-btn="auto" aria-pressed="true">Auto</button>
+    <button data-theme-btn="light" aria-pressed="false">Light</button>
+    <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+  </div>
+</header>
+
+<main>
+  <!-- ======================= TABLES ======================= -->
+  <section class="left">
+    <div class="card">
+      <div class="params" style="margin-bottom:0">
+        <span class="seg" role="group" aria-label="Mode">
+          <button id="modeHand" aria-pressed="true" title="Every cell is typed by hand; the graphs plot what you type">Fill by hand</button>
+          <button id="modeAuto" aria-pressed="false" title="Type the first two columns; everything else is calculated">Auto-calculate</button>
+        </span>
+      </div>
+      <div class="btns">
+        <button class="primary" id="btnCheck">Check my answers</button>
+        <button id="btnFill">Show answers</button>
+        <button id="btnClearCalc">Clear calculated columns</button>
+        <button id="btnClearIn" title="Keeps only L (Table 1) and Q (Table 2)">Clear everything</button>
+        <button id="btnDefault">Load example</button>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+    </div>
+
+    <div class="card" data-table="t1">
+      <h2>Table 1. The sewing line <small>production and total cost</small></h2>
+      <div class="params">
+        <label>Fixed cost FC <input type="number" data-param="fc" step="any"></label>
+        <label>Wage w per worker <input type="number" data-param="wage" step="any"></label>
+      </div>
+      <div class="tablewrap"><table><thead></thead><tbody></tbody></table></div>
+      <div class="btns"><button class="mini" data-add>+ Row</button><button class="mini" data-del>&minus; Row</button></div>
+      <p class="note">MP = &Delta;Q/&Delta;L, AP = Q/L, VC = w &times; L, TC = FC + VC. Used by graphs 1&ndash;3 and the production-to-cost tab.</p>
+    </div>
+
+    <div class="card" data-table="t2">
+      <h2>Table 2. The cost table <small>output in dozens of T-shirts</small></h2>
+      <div class="params">
+        <label>Fixed cost FC <input type="number" data-param="fc" step="any"></label>
+      </div>
+      <div class="tablewrap"><table><thead></thead><tbody></tbody></table></div>
+      <div class="btns"><button class="mini" data-add>+ Row</button><button class="mini" data-del>&minus; Row</button></div>
+      <p class="note">VC = TC &minus; FC, AFC = FC/Q, AVC = VC/Q, ATC = TC/Q, MC = &Delta;TC/&Delta;Q. Used by graph 4.</p>
+    </div>
+    <p class="small">Empty cells are skipped. Hover or click a row to highlight its points in the graphs.</p>
+  </section>
+
+  <!-- ======================= GRAPHS ======================= -->
+  <section>
+    <div class="tabs seg" role="tablist">
+      <button id="tabGraphs" role="tab" aria-pressed="true">Four graphs</button>
+      <button id="tabRotate" role="tab" aria-pressed="false">From production to cost</button>
+    </div>
+
+    <div id="paneGraphs">
+      <div class="params">
+        <label><input type="checkbox" id="midpts" checked> Plot MP and MC halfway between rows</label>
+        <label>Per-dozen graph: y-axis max <input type="number" id="ymaxUnit" value="80" step="any"></label>
+      </div>
+      <div class="params">
+        <span class="small" style="color:var(--ink2)">Show:</span>
+        <span class="seg" role="group" aria-label="Show graphs">
+          <button data-show="1" aria-pressed="true">1. Production</button>
+          <button data-show="2" aria-pressed="true">2. MP and AP</button>
+          <button data-show="3" aria-pressed="true">3. Total cost</button>
+          <button data-show="4" aria-pressed="true">4. Cost per dozen</button>
+        </span>
+        <button id="showAll">Show all</button>
+      </div>
+      <div class="grid4" id="grid4">
+        <div class="plot" data-plot="1"><button class="hidebtn" data-hide="1" title="Hide this graph" aria-label="Hide graph 1">&times;</button><h3>1. Production function <small>Table 1</small></h3><div class="legend" id="lg1"></div><svg id="g1" viewBox="0 0 440 300"></svg></div>
+        <div class="plot" data-plot="2"><button class="hidebtn" data-hide="2" title="Hide this graph" aria-label="Hide graph 2">&times;</button><h3>2. Marginal and average product <small>Table 1</small></h3><div class="legend" id="lg2"></div><svg id="g2" viewBox="0 0 440 300"></svg></div>
+        <div class="plot" data-plot="3"><button class="hidebtn" data-hide="3" title="Hide this graph" aria-label="Hide graph 3">&times;</button><h3>3. Total cost <small>Table 1</small></h3><div class="legend" id="lg3"></div><svg id="g3" viewBox="0 0 440 300"></svg></div>
+        <div class="plot" data-plot="4"><button class="hidebtn" data-hide="4" title="Hide this graph" aria-label="Hide graph 4">&times;</button><h3>4. Cost per dozen <small>Table 2</small></h3><div class="legend" id="lg4"></div><svg id="g4" viewBox="0 0 440 300"></svg></div>
+        <p class="small" id="noneShown" hidden>All graphs are hidden. Click a button above to show one.</p>
+      </div>
+      <p class="note">MP has the same color as MC, and AP the same color as AVC: MC = w/MP and AVC = w/AP. When MP is at its highest, MC is at its lowest; when AP is at its highest, AVC is at its lowest.</p>
+    </div>
+
+    <div id="paneRotate" hidden>
+      <div class="plot">
+        <div class="rot-controls">
+          <button class="primary" id="play">&#9654; Play</button>
+          <span class="seg" role="group" aria-label="Step">
+            <button data-stage="0" aria-pressed="true">1. Q = f(L)</button>
+            <button data-stage="1" aria-pressed="false">2. Flip</button>
+            <button data-stage="2" aria-pressed="false">3. &times; wage</button>
+            <button data-stage="3" aria-pressed="false">4. + FC</button>
+          </span>
+          <input type="range" id="stage" min="0" max="3" step="0.005" value="0" aria-label="Step slider">
+          <label class="small"><input type="checkbox" id="ghost" checked> Keep a faint copy</label>
+        </div>
+        <svg id="rot" viewBox="0 0 640 520"></svg>
+        <p class="caption" id="caption"></p>
+        <p class="small">Uses Table 1. Drag the slider slowly, or click a row of Table 1 to follow one point (for example L = 3, Q = 72) through every step.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+"use strict";
+// ---------------------------------------------------------------- data
+const TABLES = {
+  t1: { inputs:["L","Q"], cols:[
+    {k:"L",h:"L",sub:"workers"}, {k:"Q",h:"Q",sub:"T-shirts/hour"},
+    {k:"MP",h:"MP",noFirst:true,sep:true}, {k:"AP",h:"AP",noFirst:true},
+    {k:"FC",h:"FC",sep:true}, {k:"VC",h:"VC"}, {k:"TC",h:"TC"} ]},
+  t2: { inputs:["Q","TC"], cols:[
+    {k:"Q",h:"Q",sub:"dozens/hour"}, {k:"TC",h:"TC"},
+    {k:"FC",h:"FC",sep:true}, {k:"VC",h:"VC"},
+    {k:"AFC",h:"AFC",noFirst:true,sep:true}, {k:"AVC",h:"AVC",noFirst:true}, {k:"ATC",h:"ATC",noFirst:true}, {k:"MC",h:"MC",noFirst:true} ]}
+};
+Object.values(TABLES).forEach(t=>{ t.calc = t.cols.map(c=>c.k).filter(k=>!t.inputs.includes(k)); });
+const KEY = "prodCostExplorer.v2";
+
+function freshState(){
+  return { mode:"hand",
+    t1:{fc:60, wage:30, rows:[0,20,50,72,88,100,108].map((q,i)=>({L:String(i),Q:String(q)}))},
+    t2:{fc:60, rows:[60,74,84,93,108,130,162,210,280].map((tc,i)=>({Q:String(i),TC:String(tc)}))} };
+}
+// Saved work from an older table size (e.g. the 7-row cost table before 2026-11-10) is dropped so the new rows show.
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)), f=freshState();
+  return s&&s.t1&&s.t2&&s.t1.rows.length===f.t1.rows.length&&s.t2.rows.length===f.t2.rows.length ? s : null; }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+let state = load() || freshState();
+
+const num = v => { if(v===undefined||v===null) return NaN; const s=String(v).trim().replace(/,/g,""); return s===""?NaN:Number(s); };
+const fin = Number.isFinite;
+function fmt(x){ if(!fin(x)) return ""; const r=Math.round(x*10)/10; return Number.isInteger(r)?String(r):r.toFixed(1); }
+const fmtc = x => fmt(x).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+// correct values
+function compute(tk){
+  const t=state[tk], FC=num(t.fc), w=num(t.wage), out=t.rows.map(()=>({}));
+  t.rows.forEach((r,i)=>{
+    const o=out[i], Q=num(r.Q);
+    if(fin(FC)) o.FC=FC;
+    if(tk==="t1"){
+      const L=num(r.L);
+      if(fin(L)&&fin(w)) o.VC=w*L;
+      if(fin(o.FC)&&fin(o.VC)) o.TC=o.FC+o.VC;
+      if(fin(L)&&fin(Q)&&L>0) o.AP=Q/L;
+      if(i>0){ const p=t.rows[i-1], Lp=num(p.L), Qp=num(p.Q);
+        if(fin(L)&&fin(Lp)&&fin(Q)&&fin(Qp)&&L!==Lp) o.MP=(Q-Qp)/(L-Lp); }
+    } else {
+      const TC=num(r.TC);
+      if(fin(TC)&&fin(FC)) o.VC=TC-FC;
+      if(fin(Q)&&Q>0){ if(fin(FC)) o.AFC=FC/Q; if(fin(o.VC)) o.AVC=o.VC/Q; if(fin(TC)) o.ATC=TC/Q; }
+      if(i>0){ const p=t.rows[i-1], Qp=num(p.Q), TCp=num(p.TC);
+        if(fin(TC)&&fin(TCp)&&fin(Q)&&fin(Qp)&&Q!==Qp) o.MC=(TC-TCp)/(Q-Qp); }
+    }
+  });
+  return out;
+}
+// what the graphs use: typed values (hand mode) or computed (auto mode)
+function values(tk){
+  const c=compute(tk), T=TABLES[tk];
+  return state[tk].rows.map((r,i)=>{
+    const v={}; T.inputs.forEach(k=>v[k]=num(r[k]));
+    T.calc.forEach(k=>{ v[k] = state.mode==="auto" ? c[i][k] : num(r[k]); });
+    return v;
+  });
+}
+
+// ---------------------------------------------------------------- tables
+let selRow=null, hoverRow=null;              // row ids like "t1:3"
+const hl = () => hoverRow!==null ? hoverRow : selRow;
+const card = tk => document.querySelector(`[data-table="${tk}"]`);
+const tbodyOf = tk => card(tk).querySelector("tbody");
+
+function buildTable(tk){
+  const T=TABLES[tk], c=card(tk);
+  c.querySelector("thead").innerHTML="<tr>"+T.cols.map(x=>`<th class="${x.sep?"sep":""}">${x.h}${x.sub?`<small>${x.sub}</small>`:""}</th>`).join("")+"</tr>";
+  const tb=tbodyOf(tk); tb.innerHTML="";
+  state[tk].rows.forEach((r,i)=>{
+    const tr=document.createElement("tr"); tr.dataset.id=tk+":"+i;
+    T.cols.forEach(col=>{
+      const td=document.createElement("td"); if(col.sep) td.className="sep";
+      const inp=document.createElement("input");
+      inp.className="cell"; inp.dataset.k=col.k; inp.dataset.i=i; inp.dataset.t=tk;
+      inp.inputMode="decimal"; inp.autocomplete="off"; inp.setAttribute("aria-label", col.h+" row "+(i+1));
+      if(col.noFirst && i===0){ inp.disabled=true; inp.value="–"; }
+      td.appendChild(inp); tr.appendChild(td);
+    });
+    tr.addEventListener("mouseenter",()=>{ hoverRow=tr.dataset.id; renderAll(); });
+    tr.addEventListener("mouseleave",()=>{ hoverRow=null; renderAll(); });
+    tr.addEventListener("click",e=>{ if(e.target.tagName!=="INPUT"||e.target.readOnly){ selRow = selRow===tr.dataset.id?null:tr.dataset.id; renderAll(); } });
+    tb.appendChild(tr);
+  });
+  syncTable(tk);
+}
+function syncTable(tk){
+  const c=compute(tk), T=TABLES[tk];
+  tbodyOf(tk).querySelectorAll("input.cell").forEach(inp=>{
+    if(inp.disabled) return;
+    const i=+inp.dataset.i, k=inp.dataset.k, auto=state.mode==="auto" && T.calc.includes(k);
+    inp.readOnly=auto;
+    const want = auto ? fmt(c[i][k]) : (state[tk].rows[i][k] ?? "");
+    if(document.activeElement!==inp && inp.value!==want) inp.value=want;
+    if(auto) inp.classList.remove("ok","bad");
+  });
+  card(tk).querySelectorAll("[data-param]").forEach(p=>{ if(document.activeElement!==p) p.value=state[tk][p.dataset.param]; });
+}
+const syncAll = () => { syncTable("t1"); syncTable("t2"); };
+
+["t1","t2"].forEach(tk=>{
+  const tb=tbodyOf(tk);
+  tb.addEventListener("input",e=>{
+    const inp=e.target; if(!inp.classList.contains("cell")) return;
+    state[tk].rows[+inp.dataset.i][inp.dataset.k]=inp.value;
+    inp.classList.remove("ok","bad"); save(); syncTable(tk); renderAll();
+  });
+  tb.addEventListener("focusin",e=>{ if(e.target.dataset && e.target.dataset.i!==undefined){ selRow=tk+":"+e.target.dataset.i; renderAll(); } });
+  tb.addEventListener("keydown",e=>{
+    const inp=e.target; if(!inp.classList.contains("cell")) return;
+    const cols=TABLES[tk].cols, i=+inp.dataset.i, j=cols.findIndex(c=>c.k===inp.dataset.k);
+    let ni=i, nj=j;
+    if(e.key==="ArrowDown"||e.key==="Enter") ni=i+1; else if(e.key==="ArrowUp") ni=i-1;
+    else if(e.key==="ArrowRight" && inp.selectionStart===inp.value.length) nj=j+1;
+    else if(e.key==="ArrowLeft" && inp.selectionStart===0) nj=j-1; else return;
+    const t=tb.querySelector(`input[data-i="${ni}"][data-k="${(cols[nj]||{}).k}"]`);
+    if(t && !t.disabled){ e.preventDefault(); t.focus(); t.select(); }
+  });
+  card(tk).querySelectorAll("[data-param]").forEach(p=>p.addEventListener("input",()=>{
+    state[tk][p.dataset.param]=p.value; save(); syncTable(tk); renderAll();
+  }));
+  card(tk).querySelector("[data-add]").onclick=()=>{
+    const rows=state[tk].rows, first=TABLES[tk].cols[0].k, last=num(rows[rows.length-1][first]);
+    const r={}; r[first]=fin(last)?String(last+1):""; rows.push(r); save(); buildTable(tk); renderAll();
+  };
+  card(tk).querySelector("[data-del]").onclick=()=>{
+    if(state[tk].rows.length>2){ state[tk].rows.pop(); selRow=null; save(); buildTable(tk); renderAll(); }
+  };
+});
+
+const statusEl=document.getElementById("status");
+function setMode(m){
+  state.mode=m; save();
+  document.getElementById("modeHand").setAttribute("aria-pressed", m==="hand");
+  document.getElementById("modeAuto").setAttribute("aria-pressed", m==="auto");
+  syncAll(); renderAll();
+}
+document.getElementById("modeHand").onclick=()=>setMode("hand");
+document.getElementById("modeAuto").onclick=()=>setMode("auto");
+const clearMarks=()=>document.querySelectorAll("input.cell").forEach(i=>i.classList.remove("ok","bad"));
+
+document.getElementById("btnCheck").onclick=()=>{
+  if(state.mode==="auto"){ statusEl.textContent="Switch to “Fill by hand” to check answers."; return; }
+  let right=0, wrong=0, empty=0;
+  ["t1","t2"].forEach(tk=>{
+    const c=compute(tk), calc=TABLES[tk].calc;
+    tbodyOf(tk).querySelectorAll("input.cell").forEach(inp=>{
+      const k=inp.dataset.k; if(inp.disabled||!calc.includes(k)) return;
+      const want=c[+inp.dataset.i][k], got=num(inp.value);
+      inp.classList.remove("ok","bad");
+      if(!fin(want)) return;
+      if(!fin(got)){ empty++; return; }
+      if(Math.abs(got-want)<=Math.max(0.06,Math.abs(want)*0.006)){ inp.classList.add("ok"); right++; } else { inp.classList.add("bad"); wrong++; }
+    });
+  });
+  statusEl.textContent=`${right} right, ${wrong} to fix, ${empty} still empty. (Rounding to one decimal is fine.)`;
+};
+document.getElementById("btnFill").onclick=()=>{
+  ["t1","t2"].forEach(tk=>{ const c=compute(tk); state[tk].rows.forEach((r,i)=>TABLES[tk].calc.forEach(k=>{ r[k]=fmt(c[i][k]); })); });
+  if(state.mode==="auto") setMode("hand");
+  save(); syncAll(); renderAll(); statusEl.textContent="All answers filled in.";
+};
+document.getElementById("btnClearCalc").onclick=()=>{
+  ["t1","t2"].forEach(tk=>state[tk].rows.forEach(r=>TABLES[tk].calc.forEach(k=>{ r[k]=""; })));
+  clearMarks(); save(); syncAll(); renderAll(); statusEl.textContent="";
+};
+document.getElementById("btnClearIn").onclick=()=>{
+  ["t1","t2"].forEach(tk=>{ const keep=TABLES[tk].cols[0].k; state[tk].rows.forEach(r=>Object.keys(r).forEach(k=>{ if(k!==keep) r[k]=""; })); });
+  clearMarks(); save(); syncAll(); renderAll(); statusEl.textContent="";
+};
+document.getElementById("btnDefault").onclick=()=>{
+  const m=state.mode; state=freshState(); state.mode=m; save(); selRow=null;
+  buildTable("t1"); buildTable("t2"); renderAll(); statusEl.textContent="Example numbers loaded.";
+};
+
+// ---------------------------------------------------------------- theme
+const THEME_KEY="prodCostExplorer.theme";
+function applyTheme(t){
+  if(t==="auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme",t);
+  document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.themeBtn===t));
+  try{ localStorage.setItem(THEME_KEY,t);}catch(e){}
+  renderAll();
+}
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeBtn));
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------------------------------------------------------------- plotting
+const NS="http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const a in attrs) e.setAttribute(a,attrs[a]); if(parent) parent.appendChild(e); return e; }
+function niceStep(max, n){
+  if(!(max>0)) return 1;
+  const raw=max/n, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;
+  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;
+}
+function niceMax(max,n){ const s=niceStep(max,n); return Math.max(s, Math.ceil(max/s-1e-9)*s); }
+const tipEl=document.getElementById("tip");
+function showTip(evt, html){
+  tipEl.innerHTML=html; tipEl.style.display="block";
+  tipEl.style.left=Math.min(evt.clientX+12, window.innerWidth-tipEl.offsetWidth-8)+"px"; tipEl.style.top=(evt.clientY-34+window.scrollY)+"px";
+}
+function hideTip(){ tipEl.style.display="none"; }
+
+let clipId=0;
+function plot(svg, legendEl, o){
+  // o: {xmax, ymax, xlab, ylab, series:[{name,color,dash,pts:[{x,y,row,tip}]}], vlines}
+  svg.innerHTML="";
+  const W=440,H=300,m={l:52,r:44,t:12,b:40}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const X=x=>m.l+x/o.xmax*pw, Y=y=>m.t+ph-y/o.ymax*ph;
+  const xs=niceStep(o.xmax,6), ys=niceStep(o.ymax,5);
+  const g=el("g",{},svg);
+  for(let y=0;y<=o.ymax+1e-9;y+=ys){
+    el("line",{x1:m.l,x2:m.l+pw,y1:Y(y),y2:Y(y),class:"gridl"},g);
+    el("text",{x:m.l-6,y:Y(y)+4,"text-anchor":"end"},g).textContent=fmtc(y);
+  }
+  for(let x=0;x<=o.xmax+1e-9;x+=xs){
+    el("line",{x1:X(x),x2:X(x),y1:m.t+ph,y2:m.t+ph+4,class:"axis"},g);
+    el("text",{x:X(x),y:m.t+ph+17,"text-anchor":"middle"},g).textContent=fmt(x);
+  }
+  el("line",{x1:m.l,x2:m.l+pw,y1:m.t+ph,y2:m.t+ph,class:"axis"},g);
+  el("line",{x1:m.l,x2:m.l,y1:m.t,y2:m.t+ph,class:"axis"},g);
+  el("text",{x:m.l+pw,y:H-4,"text-anchor":"end"},g).textContent=o.xlab;
+  el("text",{x:m.l+4,y:m.t+2,"text-anchor":"start","dominant-baseline":"hanging"},g).textContent=o.ylab;
+
+  const id="clip"+(++clipId);
+  const defs=el("defs",{},svg); const cp=el("clipPath",{id},defs); el("rect",{x:m.l,y:m.t-2,width:pw+2,height:ph+2},cp);
+  const plotG=el("g",{"clip-path":`url(#${id})`},svg), topG=el("g",{},svg);
+  (o.vlines||[]).forEach(v=>{ if(fin(v.x)&&v.x<=o.xmax){
+    el("line",{x1:X(v.x),x2:X(v.x),y1:m.t,y2:m.t+ph,stroke:cssv("--muted"),"stroke-dasharray":"3 4","stroke-width":1},plotG);
+    el("text",{x:X(v.x)+4,y:m.t+12},topG).textContent=v.label; }});
+
+  legendEl.innerHTML="";
+  const H_ROW=hl(); let any=false; const labelYs=[];
+  o.series.forEach(s=>{
+    const col=cssv(s.color);
+    const lg=document.createElement("span");
+    lg.innerHTML=`<svg width="22" height="8" style="width:22px;display:inline"><line x1="0" y1="4" x2="22" y2="4" stroke="${col}" stroke-width="2.5" stroke-dasharray="${s.dash||""}"/></svg>${s.name}`;
+    legendEl.appendChild(lg);
+    const pts=s.pts.filter(p=>fin(p.x)&&fin(p.y));
+    if(!pts.length) return; any=true;
+    if(pts.length>1) el("polyline",{points:pts.map(p=>X(p.x)+","+Y(p.y)).join(" "),fill:"none",stroke:col,"stroke-width":2.5,"stroke-dasharray":s.dash||"","stroke-linejoin":"round"},plotG);
+    pts.forEach(p=>{
+      if(p.y>o.ymax*1.001) return;
+      const on=p.row===H_ROW;
+      el("circle",{cx:X(p.x),cy:Y(p.y),r:on?6.5:4,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2},plotG);
+      const hit=el("circle",{cx:X(p.x),cy:Y(p.y),r:11,fill:"transparent",style:"cursor:pointer"},topG);
+      hit.addEventListener("mousemove",e=>showTip(e,p.tip||`${s.name}: ${fmt(p.y)}`));
+      hit.addEventListener("mouseleave",hideTip);
+      hit.addEventListener("click",()=>{ selRow = selRow===p.row?null:p.row; renderAll(); });
+    });
+    const vis=pts.filter(p=>p.y<=o.ymax && p.x<=o.xmax), last=vis[vis.length-1];
+    if(last){
+      let ly=Y(last.y)+4; while(labelYs.some(v=>Math.abs(v-ly)<13)) ly+=13; labelYs.push(ly);
+      el("text",{x:Math.min(X(last.x)+7,W-2),y:ly,class:"lbl","text-anchor":X(last.x)+7>W-30?"end":"start"},topG).textContent=s.name;
+    }
+  });
+  if(!any) el("text",{x:m.l+pw/2,y:m.t+ph/2,"text-anchor":"middle"},svg).textContent="Fill in the table to draw this graph";
+}
+
+function renderGraphs(){
+  document.querySelectorAll("tr[data-id]").forEach(tr=>tr.classList.toggle("hl", tr.dataset.id===hl()));
+  const mid=document.getElementById("midpts").checked;
+  const maxOf=arr=>Math.max(0,...arr.filter(fin));
+  // ---- Table 1: graphs 1-3
+  const a=values("t1"), id1=i=>"t1:"+i;
+  const Lmax=niceMax(Math.max(maxOf(a.map(r=>r.L)),1)*1.05,6), Qmax=niceMax(Math.max(maxOf(a.map(r=>r.Q)),1)*1.08,5);
+  const mpx=i=> mid&&i>0&&fin(a[i-1].L) ? (a[i].L+a[i-1].L)/2 : a[i].L;
+  plot(document.getElementById("g1"),document.getElementById("lg1"),{
+    xmax:Lmax, ymax:Qmax, xlab:"L (workers)", ylab:"Q (T-shirts per hour)",
+    series:[{name:"Q",color:"--prod",pts:a.map((r,i)=>({x:r.L,y:r.Q,row:id1(i),tip:`L = ${fmt(r.L)}, Q = ${fmt(r.Q)}`}))}]
+  });
+  const ppMax=niceMax(Math.max(maxOf(a.slice(1).map(r=>r.MP)),maxOf(a.slice(1).map(r=>r.AP)),1)*1.1,5);
+  plot(document.getElementById("g2"),document.getElementById("lg2"),{
+    xmax:Lmax, ymax:ppMax, xlab:"L (workers)", ylab:"T-shirts per worker",
+    series:[
+      {name:"MP",color:"--mc",pts:a.map((r,i)=>i?({x:mpx(i),y:r.MP,row:id1(i),tip:`MP from L = ${fmt(a[i-1].L)} to ${fmt(r.L)}: ${fmt(r.MP)}`}):{})},
+      {name:"AP",color:"--avc",dash:"7 4",pts:a.map((r,i)=>i?({x:r.L,y:r.AP,row:id1(i),tip:`AP at L = ${fmt(r.L)}: ${fmt(r.AP)}`}):{})}
+    ]
+  });
+  const tcMax=niceMax(Math.max(maxOf(a.map(r=>r.TC)),maxOf(a.map(r=>r.VC)),maxOf(a.map(r=>r.FC)),1)*1.08,5);
+  plot(document.getElementById("g3"),document.getElementById("lg3"),{
+    xmax:Qmax, ymax:tcMax, xlab:"Q (T-shirts per hour)", ylab:"'000 VND per hour",
+    series:[
+      {name:"TC",color:"--atc",pts:a.map((r,i)=>({x:r.Q,y:r.TC,row:id1(i),tip:`Q = ${fmt(r.Q)}: TC = ${fmtc(r.TC)}`}))},
+      {name:"VC",color:"--avc",dash:"7 4",pts:a.map((r,i)=>({x:r.Q,y:r.VC,row:id1(i),tip:`Q = ${fmt(r.Q)}: VC = ${fmtc(r.VC)}`}))},
+      {name:"FC",color:"--afc",dash:"2 4",pts:a.map((r,i)=>({x:r.Q,y:r.FC,row:id1(i),tip:`Q = ${fmt(r.Q)}: FC = ${fmtc(r.FC)}`}))}
+    ]
+  });
+  // ---- Table 2: graph 4
+  const b=values("t2"), id2=i=>"t2:"+i;
+  const Q2max=niceMax(Math.max(maxOf(b.map(r=>r.Q)),1)*1.08,6);
+  const mcx=i=> mid&&i>0&&fin(b[i-1].Q) ? (b[i].Q+b[i-1].Q)/2 : b[i].Q;
+  let um=num(document.getElementById("ymaxUnit").value);
+  if(!(um>0)) um=niceMax(Math.max(maxOf(b.map(r=>r.ATC)),1),5);
+  let best=null; b.forEach((r,i)=>{ if(i&&fin(r.ATC)&&fin(r.Q)&&(best===null||r.ATC<b[best].ATC)) best=i; });
+  plot(document.getElementById("g4"),document.getElementById("lg4"),{
+    xmax:Q2max, ymax:um, xlab:"Q (dozens per hour)", ylab:"'000 VND per dozen",
+    vlines: best!==null?[{x:b[best].Q,label:`Min ATC at Q = ${fmt(b[best].Q)}`}]:[],
+    series:[
+      {name:"MC",color:"--mc",pts:b.map((r,i)=>i?({x:mcx(i),y:r.MC,row:id2(i),tip:`MC from Q = ${fmt(b[i-1].Q)} to ${fmt(r.Q)}: ${fmt(r.MC)}`}):{})},
+      {name:"ATC",color:"--atc",pts:b.map((r,i)=>i?({x:r.Q,y:r.ATC,row:id2(i),tip:`ATC at Q = ${fmt(r.Q)}: ${fmt(r.ATC)}`}):{})},
+      {name:"AVC",color:"--avc",dash:"7 4",pts:b.map((r,i)=>i?({x:r.Q,y:r.AVC,row:id2(i),tip:`AVC at Q = ${fmt(r.Q)}: ${fmt(r.AVC)}`}):{})},
+      {name:"AFC",color:"--afc",dash:"2 4",pts:b.map((r,i)=>i?({x:r.Q,y:r.AFC,row:id2(i),tip:`AFC at Q = ${fmt(r.Q)}: ${fmt(r.AFC)}`}):{})}
+    ]
+  });
+}
+document.getElementById("midpts").onchange=()=>renderAll();
+document.getElementById("ymaxUnit").oninput=()=>renderAll();
+
+// show / hide individual graphs (remembered in this browser)
+const SHOW_KEY="prodCostExplorer.show";
+let shown=["1","2","3","4"];
+try{ const s=JSON.parse(localStorage.getItem(SHOW_KEY)); if(Array.isArray(s)) shown=s; }catch(e){}
+function applyShown(){
+  document.querySelectorAll("[data-plot]").forEach(p=>{ p.hidden=!shown.includes(p.dataset.plot); });
+  document.querySelectorAll("[data-show]").forEach(b=>b.setAttribute("aria-pressed", shown.includes(b.dataset.show)));
+  document.getElementById("grid4").classList.toggle("one", shown.length===1);
+  document.getElementById("noneShown").hidden = shown.length>0;
+  try{ localStorage.setItem(SHOW_KEY, JSON.stringify(shown)); }catch(e){}
+}
+function toggleShown(k){ shown = shown.includes(k) ? shown.filter(x=>x!==k) : [...shown,k].sort(); applyShown(); }
+document.querySelectorAll("[data-show]").forEach(b=>b.onclick=()=>toggleShown(b.dataset.show));
+document.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>toggleShown(b.dataset.hide));
+document.getElementById("showAll").onclick=()=>{ shown=["1","2","3","4"]; applyShown(); };
+applyShown();
+
+// ---------------------------------------------------------------- rotation demo (Table 1)
+// Normalized coordinates: u = L/Lmax (horizontal), v = Q/Qmax (vertical).
+// Flipping = rotating 180 degrees in 3D around the 45-degree line, so (u, v) ends at (v, u).
+const rotSvg=document.getElementById("rot"), stageIn=document.getElementById("stage"), capEl=document.getElementById("caption");
+const RO={ox:110, oy:440, S:380};
+function rot3(u,v,th){ const a=(u+v)/2, d=(u-v)/2, c=Math.cos(th), s=Math.sin(th); return [a+c*d, a-c*d, -s*(u-v)/Math.SQRT2]; }
+function proj(p){ const D=3.2, k=D/(D-p[2]); return [RO.ox+(0.5+(p[0]-0.5)*k)*RO.S, RO.oy-(0.5+(p[1]-0.5)*k)*RO.S]; }
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function mix(c1,c2,t){
+  const h=c=>{c=c.replace("#",""); return [0,2,4].map(i=>parseInt(c.substr(i,2),16));};
+  const a=h(c1),b=h(c2); return "rgb("+a.map((x,i)=>Math.round(x+(b[i]-x)*t)).join(",")+")";
+}
+const CAPS=[
+  "<b>Step 1. The production function</b> Q = f(L). Diminishing marginal product: each extra worker adds fewer T-shirts, so the curve gets flatter.",
+  "<b>Step 2. Flip it around the 45&deg; line.</b> The same curve now answers: how many workers L do I need to sew Q T-shirts? Flat parts become steep parts.",
+  "<b>Step 3. Multiply workers by the wage.</b> VC = w &times; L. The curve keeps its shape: it is the production function, flipped, measured in money.",
+  "<b>Step 4. Add fixed cost.</b> TC = FC + VC. Same shape again, shifted up by FC. Diminishing MP is why TC bends upward and MC rises."
+];
+function renderRot(){
+  const s=+stageIn.value;
+  document.querySelectorAll("[data-stage]").forEach(b=>b.setAttribute("aria-pressed", Math.round(s)===+b.dataset.stage && Math.abs(s-Math.round(s))<0.02));
+  capEl.innerHTML=CAPS[clamp(Math.ceil(s-0.01),0,3)];
+  const th=Math.PI*ease(clamp(s,0,1)), t2=ease(clamp(s-1,0,1)), t3=ease(clamp(s-2,0,1));
+  const FC=num(state.t1.fc)||0, w=num(state.t1.wage)||0;
+  const rows=state.t1.rows.map((r,i)=>({L:num(r.L),Q:num(r.Q),id:"t1:"+i})).filter(r=>fin(r.L)&&fin(r.Q));
+  rotSvg.innerHTML="";
+  if(rows.length<2){ el("text",{x:320,y:260,"text-anchor":"middle"},rotSvg).textContent="Fill in at least two rows of L and Q in Table 1"; return; }
+  const Lmax=niceMax(Math.max(...rows.map(r=>r.L))*1.05,6), Qmax=niceMax(Math.max(...rows.map(r=>r.Q))*1.08,5);
+  const Cmax=niceMax((FC+w*Math.max(...rows.map(r=>r.L)))*1.05,5)||1;
+  const uOf=L=>{ const u1=L/Lmax, u2=w*L/Cmax; return u1+(u2-u1)*t2 + (FC/Cmax)*t3; };
+  const P=(u,v)=>proj(rot3(u,v,th));
+  const muted=cssv("--muted"), ink2=cssv("--ink2");
+  const g=el("g",{},rotSvg);
+  const hingeOp = s<=1 ? 1 : clamp(1-(s-1)*2,0,1);
+  if(hingeOp>0){
+    const a=P(0,0), b=P(1.04,1.04);
+    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:muted,"stroke-dasharray":"5 5","stroke-width":1.5,opacity:hingeOp},g);
+    el("text",{x:b[0]+6,y:b[1],opacity:hingeOp},g).textContent="45° line (hinge)";
+  }
+  const uA=[P(0,0),P(1.06,0)], vA=[P(0,0),P(0,1.06)];
+  [uA,vA].forEach(A=>el("line",{x1:A[0][0],y1:A[0][1],x2:A[1][0],y2:A[1][1],stroke:ink2,"stroke-width":1.5},g));
+  const early=th<Math.PI/2;
+  const qs=niceStep(Qmax,5);
+  for(let q=qs;q<=Qmax+1e-9;q+=qs){ const p=P(0,q/Qmax); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2},g); const off=early?[-8,4,"end"]:[0,18,"middle"]; el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2]},g).textContent=fmt(q); }
+  const lOp=1-t2, cOp=t2, ls=niceStep(Lmax,7);
+  for(let L=ls;L<=Lmax+1e-9;L+=ls){ const p=P(uOf(L)-(FC/Cmax)*t3,0); const off=early?[0,18,"middle"]:[-8,4,"end"]; el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:lOp},g); if(lOp>0.02) el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2],opacity:lOp},g).textContent=fmt(L); }
+  if(cOp>0.02){ const cs=niceStep(Cmax,5); for(let c=cs;c<=Cmax+1e-9;c+=cs){ const p=P(c/Cmax,0); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:cOp},g); el("text",{x:p[0]-8,y:p[1]+4,"text-anchor":"end",opacity:cOp},g).textContent=fmtc(c); } }
+  const uEnd=uA[1], vEnd=vA[1];
+  const uTitle = t2<0.5 ? "L (workers)" : (t3<0.5 ? "VC ('000 VND/hour)" : "TC ('000 VND/hour)");
+  el("text",{x:uEnd[0]+(early?6:0),y:uEnd[1]+(early?4:-10),"text-anchor":early?"start":"middle",class:"lbl"},g).textContent=uTitle;
+  el("text",{x:vEnd[0]+(early?0:6),y:vEnd[1]+(early?-10:4),"text-anchor":early?"middle":"start",class:"lbl"},g).textContent="Q (T-shirts/hour)";
+  const ghost=document.getElementById("ghost").checked;
+  const line=(pts,col,dash,op,wd)=>el("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",stroke:col,"stroke-width":wd||3,"stroke-dasharray":dash||"","stroke-linejoin":"round",opacity:op},g);
+  if(ghost && s>0.02 && s<=1.02) line(rows.map(r=>proj([r.L/Lmax,r.Q/Qmax,0])),cssv("--prod"),"4 5",0.3,2);
+  if(ghost && s>2.02){ const gp=rows.map(r=>proj(rot3(w*r.L/Cmax,r.Q/Qmax,Math.PI))); line(gp,cssv("--avc"),"7 4",0.55,2); const e=gp[gp.length-1]; el("text",{x:e[0]+10,y:e[1]+4,class:"lbl",opacity:t3},g).textContent="VC"; }
+  if(t3>0.02){
+    const a=P(FC/Cmax*t3,0), b=P(FC/Cmax*t3,1.02);
+    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cssv("--afc"),"stroke-dasharray":"2 4","stroke-width":2,opacity:t3},g);
+    el("text",{x:b[0]+4,y:b[1]+4,opacity:t3},g).textContent="FC = "+fmtc(FC);
+  }
+  let col=cssv("--prod"); const cp=cssv("--prod"),cv=cssv("--avc"),ct=cssv("--atc");
+  if(s>1) col = s<=2 ? mix(cp,cv,t2) : mix(cv,ct,t3);
+  const pts=rows.map(r=>P(uOf(r.L),r.Q/Qmax));
+  line(pts,col,"",1,3);
+  const H_ROW=hl();
+  rows.forEach((r,k)=>{
+    const p=pts[k], on=r.id===H_ROW;
+    el("circle",{cx:p[0],cy:p[1],r:on?7:4.5,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2},g);
+    if(on){
+      const third = s<1.5 ? `L = ${fmt(r.L)}` : (s<2.5 ? `VC = ${fmtc(w*r.L)}` : `TC = ${fmtc(FC+w*r.L)}`);
+      el("text",{x:p[0]+12,y:p[1]+22,class:"lbl"},g).textContent=`Q = ${fmt(r.Q)}, ${third}`;
+    }
+  });
+  const last=pts[pts.length-1];
+  const nm = s<1.5 ? (s<0.5?"Q = f(L)":"L needed for Q") : (s<2.5?"VC":"TC");
+  el("text",{x:last[0]+10,y:last[1]+4,class:"lbl"},g).textContent=nm;
+}
+stageIn.addEventListener("input",()=>{ stopPlay(); renderRot(); });
+document.getElementById("ghost").onchange=renderRot;
+let anim=null;
+const playBtn=document.getElementById("play");
+function stopPlay(){ if(anim){ cancelAnimationFrame(anim); anim=null; playBtn.innerHTML="&#9654; Play"; } }
+function goTo(target, dur){
+  stopPlay(); const from=+stageIn.value, t0=performance.now();
+  playBtn.innerHTML="&#10074;&#10074; Pause";
+  const step=now=>{ const k=Math.min(1,(now-t0)/dur); stageIn.value=from+(target-from)*k; renderRot();
+    if(k<1) anim=requestAnimationFrame(step); else { anim=null; playBtn.innerHTML="&#9654; Play"; } };
+  anim=requestAnimationFrame(step);
+}
+document.querySelectorAll("[data-stage]").forEach(b=>b.onclick=()=>{ const t=+b.dataset.stage; goTo(t, 900*Math.max(0.4,Math.abs(t-stageIn.value))); });
+playBtn.onclick=()=>{
+  if(anim){ stopPlay(); return; }
+  const s=+stageIn.value, next = s>=2.99 ? 0 : Math.floor(s+1e-6)+1;
+  if(next===0){ stageIn.value=0; renderRot(); return; }
+  goTo(next, next===1?2200:1400);
+};
+
+// ---------------------------------------------------------------- tabs
+function showTab(which){
+  document.getElementById("paneGraphs").hidden = which!=="graphs";
+  document.getElementById("paneRotate").hidden = which!=="rotate";
+  document.getElementById("tabGraphs").setAttribute("aria-pressed", which==="graphs");
+  document.getElementById("tabRotate").setAttribute("aria-pressed", which==="rotate");
+  renderAll();
+}
+document.getElementById("tabGraphs").onclick=()=>showTab("graphs");
+document.getElementById("tabRotate").onclick=()=>showTab("rotate");
+
+function renderAll(){ renderGraphs(); renderRot(); }
+
+// ---------------------------------------------------------------- start
+buildTable("t1"); buildTable("t2");
+setMode(state.mode||"hand");
+let th0="auto"; try{ th0=localStorage.getItem(THEME_KEY)||"auto"; }catch(e){}
+applyTheme(th0);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>renderAll());
+})();
+</script>
+</body>
+</html>
