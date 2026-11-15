@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profit Maximization Explorer</title>
+<!--
+  Profit Maximization Explorer (Topics 7-8). Standalone page, no internet needed: open it in any browser.
+  Built 2026-11-15 as a companion to production_cost_explorer.html (same look, same story and numbers).
+    Part 1. MR = MC: an animation that adds output one unit at a time (play / pause / step / scrub).
+            Top graph: TR and TC, the gap between them is profit (green = profit, pink = loss).
+            Middle graph: the profit "hill". Bottom graph: MR and MC; the shaded area between them is
+            the profit each unit adds (MR > MC) or takes away (MR < MC).
+            Two firms: your factory as a price taker (Topic 7: MR = P, TR is a straight line) and the
+            official T-shirt monopoly (Topic 8: MR < P, TR bends), to show MR = MC holds for every firm.
+    Part 2. Shut down or exit? Uses its own smooth hypothetical costs (since 2026-11-15, at the instructor's request; see S2
+            in the script: FC 72, min AVC 12 at Q = 4, min ATC 26 at Q = 6). The price falls (animation, pausable) and the page compares P with ATC and AVC:
+            P >= min ATC: profit, stay. min AVC <= P < min ATC: loss, keep producing now, exit in the long run.
+            P < min AVC: shut down now. The firm's supply curve (MC above min AVC) is traced alongside.
+  Numbers (all hypothetical, '000 VND):
+  - Your factory = Topic 6 Table 2: Q = 0..8 dozen T-shirts per hour, FC 60, TC 60/74/84/93/108/130/162/210/280,
+    MC 14/10/9/15/22/32/48/70, AVC min 11 at Q = 3, ATC min 26 at Q = 5.
+    Topic 7: P = 30 -> Q = 5, profit 20 (profits -60,-44,-24,-3,12,20,18,0,-40); P = 20 -> Q = 4, loss 28 (< 60);
+    shut down below 11, exit below 26.
+  - Practice A and B (Part 1 only): the cost tables of the production cost explorer's practice sets
+    (A: FC 40, TC 40/52/60/66/76/92/116/150/198; B: FC 120, TC 120/150/172/192/218/252/298/360/444).
+  - Official T-shirt monopoly = Topic 8: P = 50 - 0.5Q, MR = 50 - Q, MC = 20, license 200 per day (the fixed cost);
+    Q = 30, P = 35, profit 250.
+  With whole dozens, the best Q is the last dozen whose MC is not above MR (Mankiw ch. 14, Table 1 logic).
+  Colors: TR, MR, P and demand blue (the demand side); TC and MC red; ATC orange; AVC green (as in the cost explorer).
+  Sources: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 14 and 15. Cengage.
+-->
+<style>
+:root{
+  --bg:#f7f6f3; --surface:#fcfcfb; --ink:#1d1d1b; --ink2:#55534e; --muted:#8a877f;
+  --line:#dedbd3; --grid:#ebe8e1; --accent:#7a1f2b; --accent-soft:#f4e9ea;
+  --dem:#1f5fbf; --mc:#c62828; --atc:#d97706; --avc:#2e7d32;
+  --gain:#0f9d8a; --loss:#d6457a; --mid:#d99a06; --sel:#f3eee2; --input:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+    --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
+    --dem:#6ea6ff; --mc:#f0524f; --atc:#d18a10; --avc:#23a356;
+    --gain:#2cc3ad; --loss:#ee6f9c; --mid:#e0ad2e; --sel:#2a2823; --input:#222220;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+  --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
+  --dem:#6ea6ff; --mc:#f0524f; --atc:#d18a10; --avc:#23a356;
+  --gain:#2cc3ad; --loss:#ee6f9c; --mid:#e0ad2e; --sel:#2a2823; --input:#222220;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3","Source Sans Pro","Segoe UI",system-ui,sans-serif}
+header{padding:14px 20px 10px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;max-width:1280px;margin:0 auto}
+h1{font-size:21px;margin:0;font-weight:700}
+header p{margin:0;color:var(--ink2);font-size:14.5px;flex:1 1 300px}
+.hdr-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.exctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--ink2)}
+select{font:inherit;font-size:14px;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
+
+nav.steps{position:sticky;top:0;z-index:4;background:var(--bg);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+nav.steps ol{list-style:none;margin:0 auto;padding:8px 20px;display:flex;gap:4px;max-width:1280px;overflow-x:auto}
+nav.steps li{flex:1 1 0;min-width:140px}
+nav.steps button{width:100%;text-align:left;display:flex;gap:8px;align-items:center;border:1px solid transparent;background:transparent;padding:6px 8px;border-radius:8px;color:var(--ink2);font-size:14.5px;line-height:1.2}
+nav.steps button .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font-weight:700;font-size:13px}
+nav.steps button[aria-current=step]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:600}
+nav.steps button[aria-current=step] .n{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+
+main{max-width:1280px;margin:0 auto;padding:18px 20px 8px}
+@media (max-width:600px){main,header{padding-left:16px;padding-right:16px} nav.steps ol{padding:8px 16px}}
+.part[hidden]{display:none}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.part h2{font-size:26px;margin:2px 0 6px;line-height:1.2}
+.lead{font-size:17px;color:var(--ink2);margin:0 0 16px;max-width:920px}
+.body{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:18px;align-items:start}
+@media (max-width:1000px){.body{grid-template-columns:minmax(0,1fr)}}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:560px){.pair{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h3{font-size:15px;margin:0 0 6px}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.card ul{margin:4px 0 0;padding-left:20px}
+.card li{margin:3px 0}
+.key{border-left:4px solid var(--accent);background:var(--accent-soft)}
+.try{border-left:4px solid var(--muted)}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent);min-width:104px;font-weight:600}
+button[aria-pressed=true]{background:var(--sel);border-color:var(--muted);font-weight:600}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-size:14px;color:var(--ink2)}
+input[type=range]{accent-color:var(--accent)}
+.slider{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:2px 10px;align-items:center}
+.slider label{grid-column:1 / -1;font-size:15px}
+.slider input{width:100%}
+.slider output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.chk{font-size:14px;color:var(--ink2);display:inline-flex;gap:6px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));gap:6px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--bg)}
+.tile .k{font-size:12.5px;color:var(--ink2)}
+.tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.caption{font-size:15.5px;min-height:70px;margin:10px 0 0}
+.caption b{color:var(--accent)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{font-weight:600;color:var(--ink2);padding:4px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:3px 4px;text-align:center;border-bottom:1px solid var(--grid)}
+tbody tr{cursor:pointer}
+tr.cur td{background:var(--sel)}
+tr.best td{font-weight:700}
+td.pos{color:var(--gain);font-weight:600} td.neg{color:var(--loss);font-weight:600}
+.cmp td,.cmp th{text-align:right;padding:4px 8px}
+.cmp td:first-child,.cmp th:first-child{text-align:left}
+.cmp tbody tr{cursor:default}
+.plot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 4px}
+.plot h3{font-size:14.5px;margin:2px 4px;font-weight:600}
+.plot h3 small{font-weight:400;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--ink2);margin:0 4px 2px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:20px;height:3px;border-radius:2px}
+.legend i.box{height:10px;width:14px;opacity:.45;border-radius:2px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--ink2);font-size:12px;font-family:inherit}
+svg .axis{stroke:var(--muted);stroke-width:1}
+svg .gridl{stroke:var(--grid);stroke-width:1}
+svg .zero{stroke:var(--muted);stroke-width:1.2}
+svg .lbl{fill:var(--ink);font-weight:600;font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.small{font-size:13px;color:var(--muted)}
+.decision{font-size:16px}
+.decision .tag{display:inline-block;font-weight:700;border-radius:999px;padding:2px 12px;margin-bottom:6px;color:#fff}
+.c-dem{color:var(--dem);font-weight:700}.c-mc{color:var(--mc);font-weight:700}.c-atc{color:var(--atc);font-weight:700}.c-avc{color:var(--avc);font-weight:700}
+.c-gain{color:var(--gain);font-weight:700}.c-loss{color:var(--loss);font-weight:700}
+.zones{display:flex;flex-direction:column;gap:6px;margin:4px}
+.zone{border:1px solid var(--line);border-left:6px solid var(--zc);border-radius:8px;padding:6px 10px;opacity:.5;font-size:14px;line-height:1.35}
+.zone b{color:var(--zc)}
+.zone .rng{font-variant-numeric:tabular-nums;color:var(--ink2)}
+.zone.on{opacity:1;background:var(--sel);box-shadow:0 0 0 1.5px var(--zc) inset}
+.zone .here{float:right;font-weight:700;color:var(--dem)}
+.part h2{font-size:23px}
+.lead{margin-bottom:10px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:8px 14px}
+.grow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;height:clamp(260px,calc(100vh - 385px),620px);margin:10px 0 12px}
+.grow3.g2{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1.1fr)}
+.grow3 .plot{display:flex;flex-direction:column;min-height:0;min-width:0;padding:6px 8px 2px}
+.grow3 .hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px}
+.grow3 .hd .legend{margin:0}
+.grow3 .box{flex:1 1 0;min-height:0;position:relative}
+.grow3 .box svg{position:absolute;inset:0;width:100%;height:100%}
+.grow3 .zones{overflow:auto}
+.below{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+@media (max-width:1000px){.grow3,.grow3.g2{grid-template-columns:minmax(0,1fr);height:auto}.grow3 .box{flex:none;height:260px}.below{grid-template-columns:minmax(0,1fr)}}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 6px}
+footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Profit Maximization Explorer</h1>
+  <p>How much should a firm produce, and should it produce at all? Money in '000 VND.</p>
+  <div class="hdr-ctl">
+    <span class="exctl" id="exctl">
+      <label for="exSel">Numbers for your factory</label>
+      <select id="exSel">
+        <option value="class">Your factory (class example)</option>
+        <option value="A">Practice A: small workshop</option>
+        <option value="B">Practice B: large factory</option>
+      </select>
+    </span>
+    <span class="seg" role="group" aria-label="Theme">
+      <button data-theme-btn="auto" aria-pressed="true">Auto</button>
+      <button data-theme-btn="light" aria-pressed="false">Light</button>
+      <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+    </span>
+  </div>
+</header>
+
+<nav class="steps" aria-label="Parts">
+  <ol>
+    <li><button data-go="1"><span class="n">1</span>How much to produce? MR = MC</button></li>
+    <li><button data-go="2"><span class="n">2</span>Produce at all? P vs ATC and AVC</button></li>
+  </ol>
+</nav>
+
+<main>
+<!-- ============================================================ PART 1 -->
+<section class="part" data-part="1">
+  <div class="kicker">Part 1 of 2</div>
+  <h2>How much to produce? Profit is the gap</h2>
+  <p class="lead">Profit = TR &minus; TC: the <b>gap</b> between the two curves. Press play and add output one unit at a time. <b>Where is the gap the biggest, and how do you know you have reached it?</b></p>
+  <div class="card ctl">
+    <span class="seg" role="group" aria-label="Firm">
+      <button data-firm="comp" aria-pressed="true">Your factory (price taker)</button>
+      <button data-firm="mono" aria-pressed="false">Official T-shirt (monopoly)</button>
+    </span>
+    <div class="slider" id="p1Row" style="flex:0 1 230px">
+      <label for="p1">Market price per dozen, P = MR</label>
+      <input type="range" id="p1" min="5" max="50" step="1" value="30">
+      <output id="p1o">30</output>
+    </div>
+    <span class="row" style="margin:0">
+      <button class="primary" id="play1">&#9654; Play</button>
+      <button id="back1" title="One unit back (Left arrow)">&#9664; Step</button>
+      <button id="fwd1" title="One unit forward (Right arrow)">Step &#9654;</button>
+      <button id="reset1" title="Back to Q = 0">&#8634; Reset</button>
+      <span class="seg" role="group" aria-label="Speed">
+        <button data-speed="0.5" aria-pressed="false">0.5&times;</button>
+        <button data-speed="1" aria-pressed="true">1&times;</button>
+        <button data-speed="2" aria-pressed="false">2&times;</button>
+      </span>
+    </span>
+    <input type="range" id="scrub1" min="0" max="8" step="0.01" value="0" style="flex:1 1 160px" aria-label="Quantity">
+    <label class="chk"><input type="checkbox" id="stopTop" checked> Pause at the top</label>
+    <label class="chk"><input type="checkbox" id="ghost1"> Show whole curves</label>
+  </div>
+  <div class="grow3">
+    <div class="plot"><div class="hd"><h3>TR and TC <small>gap = profit</small></h3><div class="legend" id="lgA"></div></div><div class="box"><svg id="gA" class="fit" viewBox="0 0 400 300"></svg></div></div>
+    <div class="plot"><div class="hd"><h3>Profit <small>TR &minus; TC</small></h3></div><div class="box"><svg id="gB" class="fit" viewBox="0 0 400 300"></svg></div></div>
+    <div class="plot"><div class="hd"><h3>MR and MC <small>green = profit added, pink = profit lost</small></h3><div class="legend" id="lgC"></div></div><div class="box"><svg id="gC" class="fit" viewBox="0 0 400 300"></svg></div></div>
+  </div>
+  <div class="below">
+    <div class="col">
+      <div class="card">
+        <div class="tiles" id="ro1"></div>
+        <p class="caption" id="cap1"></p>
+      </div>
+      <p class="small" id="firmNote" style="margin:0 4px"></p>
+    </div>
+    <div class="card">
+      <div class="tablewrap" id="tb1"></div>
+      <p class="small" style="margin:6px 0 0">Click a row to jump to it. Space = play/pause, arrow keys = one step.</p>
+    </div>
+    <div class="col">
+      <div class="card key">
+        <h3>The rule: MR = MC</h3>
+        <ul>
+          <li>If <span class="c-dem">MR</span> &gt; <span class="c-mc">MC</span>, one more unit <b>raises</b> profit: produce more.</li>
+          <li>If <span class="c-dem">MR</span> &lt; <span class="c-mc">MC</span>, one more unit <b>lowers</b> profit: produce less.</li>
+          <li>Profit is highest where <b>MR = MC</b>. With whole dozens: make every dozen whose MC is not above MR, and stop.</li>
+          <li>There the gap between TR and TC is the widest: the two curves have the <b>same slope</b> (slope of TR = MR, slope of TC = MC).</li>
+        </ul>
+      </div>
+      <div class="card try">
+        <h3>Try it</h3>
+        <p>Switch to the monopoly. TR is now a hill and MR is below the price. Does the same rule find the top?</p>
+        <p>Move the price for your factory. Does the best quantity move along the MC curve?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PART 2 -->
+<section class="part" data-part="2" hidden>
+  <div class="kicker">Part 2 of 2</div>
+  <h2>Produce at all? Compare P with ATC and AVC</h2>
+  <p class="lead">A bad season: the market price falls. MR = MC gives the best quantity <i>if</i> the firm produces. But should it produce at all? Press play and let the price fall. (Smooth, hypothetical cost curves.)</p>
+  <div class="card ctl">
+    <div class="slider" style="flex:1 1 260px">
+      <label for="p2">Market price per dozen, P</label>
+      <input type="range" id="p2" min="5" max="50" step="0.5" value="30">
+      <output id="p2o">30</output>
+    </div>
+    <span class="row" style="margin:0">
+      <button class="primary" id="play2">&#9654; Play</button>
+      <button id="up2" title="Price +1 (Right arrow)">P + 1</button>
+      <button id="down2" title="Price &minus;1 (Left arrow)">P &minus; 1</button>
+      <button id="reset2" title="Back to the highest price">&#8634; Reset</button>
+      <span class="seg" role="group" aria-label="Speed">
+        <button data-speed="0.5" aria-pressed="false">0.5&times;</button>
+        <button data-speed="1" aria-pressed="true">1&times;</button>
+        <button data-speed="2" aria-pressed="false">2&times;</button>
+      </span>
+    </span>
+    <label class="chk"><input type="checkbox" id="stopTh" checked> Pause at the exit and shutdown prices</label>
+  </div>
+  <div class="grow3 g2">
+    <div class="plot"><div class="hd"><h3>Cost curves and the price <small>shaded box = profit or loss</small></h3><div class="legend" id="lgD"></div></div><div class="box"><svg id="gD" class="fit" viewBox="0 0 600 300"></svg></div></div>
+    <div class="plot"><div class="hd"><h3>Price zones</h3></div><div class="zones" id="zones"></div></div>
+    <div class="plot"><div class="hd"><h3>Your supply curve <small>MC above min AVC</small></h3></div><div class="box"><svg id="gE" class="fit" viewBox="0 0 300 300"></svg></div></div>
+  </div>
+  <div class="below">
+    <div class="card decision" id="dec2"></div>
+    <div class="card">
+      <h3>Produce or shut down? <small class="small">(this hour)</small></h3>
+      <div class="tablewrap" id="cmp2"></div>
+    </div>
+    <div class="card key">
+      <h3>The decision rules</h3>
+      <ul>
+        <li><b>P &ge; ATC</b>: profit (or zero). Produce where MR = MC and stay.</li>
+        <li><b>AVC &le; P &lt; ATC</b>: a loss, but revenue pays the workers and materials (VC) and part of the rent (FC). Keep producing in the short run; <b>exit</b> in the long run.</li>
+        <li><b>P &lt; AVC</b>: revenue does not even pay VC. <b>Shut down</b> now: the loss is only FC.</li>
+      </ul>
+      <p style="margin-top:8px">Short run: shut down if P &lt; min AVC (TR &lt; VC). Long run: exit if P &lt; min ATC (TR &lt; TC). The rent already paid is a <b>sunk cost</b>: it is lost whether you open or not, so it should not drive the short-run choice.</p>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <button id="prev">&larr; Previous</button>
+  <span class="small" id="pos"></span>
+  <button class="primary" id="next">Next &rarr;</button>
+</div>
+</main>
+
+<footer>
+  All numbers are hypothetical (your factory: the Topic 6 cost table; the monopoly: Topic 8). Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 14 (Firms in Competitive Markets) and ch. 15 (Monopoly). Cengage.
+</footer>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fin=Number.isFinite;
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const a in attrs) e.setAttribute(a,attrs[a]); if(parent) parent.appendChild(e); return e; }
+function fmt(x){ if(!fin(x)) return ""; let r=Math.round(x*10)/10; if(Object.is(r,-0)) r=0;
+  return (r<0?"−":"")+Math.abs(r).toLocaleString("en-US",{maximumFractionDigits:1}); }
+function niceStep(range,n){ if(!(range>0)) return 1; const raw=range/n, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;
+  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p; }
+const EPS=1e-9;
+
+// ---------------------------------------------------------------- numbers
+const EX={
+  class:{FC:60,  TC:[60,74,84,93,108,130,162,210,280],     p0:30, pMin:5,  pMax:50},
+  A:    {FC:40,  TC:[40,52,60,66,76,92,116,150,198],       p0:20, pMin:4,  pMax:40},
+  B:    {FC:120, TC:[120,150,172,192,218,252,298,360,444], p0:60, pMin:15, pMax:80}
+};
+function costs(id){
+  const ex=EX[id], T=ex.TC, n=T.length-1, FC=ex.FC, MC=[NaN], AVC=[NaN], ATC=[NaN];
+  for(let k=1;k<=n;k++){ MC.push(T[k]-T[k-1]); AVC.push((T[k]-FC)/k); ATC.push(T[k]/k); }
+  let qv=1, qa=1; for(let k=2;k<=n;k++){ if(AVC[k]<AVC[qv]) qv=k; if(ATC[k]<ATC[qa]) qa=k; }
+  return {ex,T,n,FC,MC,AVC,ATC,qAVC:qv,minAVC:AVC[qv],qATC:qa,minATC:ATC[qa]};
+}
+// best whole quantity if the firm produces (Q >= 1); on a tie take the larger Q
+function bestQ(C,p){ let b=1; for(let k=2;k<=C.n;k++) if(p*k-C.T[k] >= p*b-C.T[b]-EPS) b=k; return b; }
+
+// ---------------------------------------------------------------- state
+const KEY="profitMaxExplorer.v1", THEME_KEY="profitMaxExplorer.theme";
+const st={part:1, firm:"comp", ex:"class", p1:30, p2:30, t:0, speed:1};
+try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){ if(s.part===2) st.part=2; if(s.firm==="mono") st.firm="mono"; if(EX[s.ex]){ st.ex=s.ex; st.p1=EX[s.ex].p0; } } }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({part:st.part,firm:st.firm,ex:st.ex})); }catch(e){} }
+
+// ---------------------------------------------------------------- part 1 model
+function M1(){
+  if(st.firm==="mono"){
+    return {mono:true, n:60, disc:false, FC:200, best:30, step:5, xstep:10,
+      tr:q=>50*q-0.5*q*q, tc:q=>200+20*q, mr:q=>50-q, mc:()=>20, dem:q=>50-0.5*q,
+      yA:[0,1400], yB:[-200,250], yC:[0,55], unitQ:"T-shirts per day", per:"day", unit:"T-shirt"};
+  }
+  const C=costs(st.ex), P=st.p1, T=C.T, n=C.n, ex=C.ex;
+  const tc=q=>{ if(q<=0) return T[0]; if(q>=n) return T[n]; const k=Math.floor(q); return T[k]+(q-k)*(T[k+1]-T[k]); };
+  const mc=q=>C.MC[Math.min(n,Math.max(1,Math.ceil(q-1e-7)))];
+  // axes fit the current price, so the gap between TR and TC fills the graph
+  let lo=0, hi=0; for(let k=0;k<=n;k++){ const v=P*k-T[k]; lo=Math.min(lo,v); hi=Math.max(hi,v); }
+  hi=Math.max(hi,0)+(hi-lo)*0.25; // headroom for the "highest profit" label
+  return {mono:false, n, disc:true, FC:C.FC, best:bestQ(C,P), step:1, xstep:1, P, C,
+    tr:q=>P*q, tc, mr:()=>P, mc,
+    yA:[0,Math.max(P*n,T[n])], yB:[lo,hi], yC:[0,Math.max(ex.pMax,...C.MC.slice(1))],
+    unitQ:"dozens per hour", per:"hour", unit:"dozen"};
+}
+
+// ---------------------------------------------------------------- drawing helpers
+let clipN=0;
+function frame(svg,o){
+  svg.innerHTML="";
+  let W=svg.viewBox.baseVal.width, H=svg.viewBox.baseVal.height;
+  if(svg.classList.contains("fit")){ const rc=svg.getBoundingClientRect(); if(rc.width>50&&rc.height>50){ W=rc.width; H=rc.height; svg.setAttribute("viewBox",`0 0 ${W} ${H}`); } }
+  const m=Object.assign({l:54,r:58,t:12,b:o.fitb||34},o.m||{}), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const ys=niceStep(o.y[1]-o.y[0],Math.max(2,Math.min(o.ny||5,Math.floor(ph/36)))), y0=Math.floor(o.y[0]/ys+EPS)*ys, y1=Math.max(y0+ys,Math.ceil(o.y[1]/ys-EPS)*ys);
+  const X=x=>m.l+x/o.xmax*pw, Y=y=>m.t+ph-(y-y0)/(y1-y0)*ph;
+  const g=el("g",{},svg);
+  for(let y=y0;y<=y1+EPS;y+=ys){
+    el("line",{x1:m.l,x2:m.l+pw,y1:Y(y),y2:Y(y),class:Math.abs(y)<EPS&&y0<0?"zero":"gridl"},g);
+    el("text",{x:m.l-6,y:Y(y)+4,"text-anchor":"end"},g).textContent=fmt(y);
+  }
+  for(let x=0;x<=o.xmax+EPS;x+=o.xstep){
+    el("line",{x1:X(x),x2:X(x),y1:m.t+ph,y2:m.t+ph+4,class:"axis"},g);
+    el("text",{x:X(x),y:m.t+ph+16,"text-anchor":"middle"},g).textContent=fmt(x);
+  }
+  el("line",{x1:m.l,x2:m.l+pw,y1:m.t+ph,y2:m.t+ph,class:"axis"},g);
+  el("line",{x1:m.l,x2:m.l,y1:m.t,y2:m.t+ph,class:"axis"},g);
+  if(o.xlab) el("text",{x:m.l+pw,y:H-3,"text-anchor":"end"},g).textContent=o.xlab;
+  if(svg.classList.contains("fit")&&o.xlab){ g.lastChild.setAttribute("y",m.t+ph-5); g.lastChild.setAttribute("class","lbl"); g.lastChild.style.fontWeight="400"; }
+  if(o.ylab) el("text",{x:m.l+4,y:m.t+2,"dominant-baseline":"hanging"},g).textContent=o.ylab;
+  const id="clip"+(++clipN), defs=el("defs",{},svg), cp=el("clipPath",{id},defs);
+  el("rect",{x:m.l,y:m.t-1,width:pw+1,height:ph+1},cp);
+  const P=el("g",{"clip-path":`url(#${id})`},svg), Top=el("g",{},svg);
+  return {X,Y,P,Top,m,pw,ph,y0,y1};
+}
+function samples(M,a,b){
+  const N=240, s=[]; for(let i=0;i<=N;i++) s.push(a+(b-a)*i/N);
+  if(M.disc) for(let k=Math.ceil(a);k<=b+EPS;k++){ s.push(k); if(k+1e-6<b) s.push(k+1e-6); }
+  s.sort((x,y)=>x-y); return s.filter((v,i)=>i===0||v-s[i-1]>1e-9);
+}
+function curve(F,f,qs,color,attrs){
+  const d="M"+qs.map(q=>F.X(q).toFixed(2)+","+F.Y(f(q)).toFixed(2)).join("L");
+  return el("path",Object.assign({d,fill:"none",stroke:color,"stroke-width":2.6,"stroke-linejoin":"round"},attrs||{}),F.P);
+}
+// shaded band between f and g: sign +1 where f > g, sign -1 where f < g
+function band(F,qs,f,g,sign,color){
+  if(qs.length<2) return;
+  const top=qs.map(q=>{ const a=f(q), b=g(q); return sign>0 ? (a>b?a:b) : b; });
+  const bot=qs.map(q=>{ const a=f(q), b=g(q); return sign>0 ? b : (a<b?a:b); });
+  let d="M"+qs.map((q,i)=>F.X(q).toFixed(2)+","+F.Y(top[i]).toFixed(2)).join("L");
+  for(let i=qs.length-1;i>=0;i--) d+="L"+F.X(qs[i]).toFixed(2)+","+F.Y(bot[i]).toFixed(2);
+  el("path",{d:d+"Z",fill:color,"fill-opacity":0.28,stroke:"none"},F.P);
+}
+function label(F,x,y,text,color,anchor){
+  const t=el("text",{x,y,class:"lbl","text-anchor":anchor||"start"},F.Top); t.textContent=text; if(color) t.style.fill=color; return t;
+}
+function vdash(F,x,color){ el("line",{x1:F.X(x),x2:F.X(x),y1:F.m.t,y2:F.m.t+F.ph,stroke:color,"stroke-dasharray":"4 4","stroke-width":1.2},F.P); }
+function dot(F,x,y,color,filled){ el("circle",{cx:F.X(x),cy:F.Y(y),r:5,fill:filled?color:cssv("--surface"),stroke:color,"stroke-width":2.2},F.Top); }
+function legend(id,items){
+  $(id).innerHTML=items.map(it=>`<span><i class="${it.box?"box":""}" style="background:${cssv(it.c)}${it.dash?";background:repeating-linear-gradient(90deg,"+cssv(it.c)+" 0 5px,transparent 5px 8px)":""}"></i>${it.t}</span>`).join("");
+}
+
+// ---------------------------------------------------------------- part 1 render
+function render1(){
+  const M=M1(); st.t=Math.min(Math.max(st.t,0),M.n); const t=st.t;
+  const ghost=$("ghost1").checked, reached=t>=M.best-1e-6;
+  const cDem=cssv("--dem"), cMC=cssv("--mc"), cGain=cssv("--gain"), cLoss=cssv("--loss"), cInk=cssv("--ink"), cMut=cssv("--muted");
+  const all=samples(M,0,M.n), qs=t>0?samples(M,0,t):[0];
+  const pi=q=>M.tr(q)-M.tc(q);
+  const xlab="Q ("+M.unitQ+")";
+
+  // controls
+  $("p1Row").hidden=M.mono; $("exSel").disabled=M.mono;
+  document.querySelectorAll("[data-firm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.firm===st.firm));
+  const sc=$("scrub1"); sc.max=M.n; sc.step=M.disc?0.01:0.1; sc.value=t;
+  $("firmNote").innerHTML=M.mono
+    ? `Your factory holds the only license for the official university logo T-shirt. Demand: P = 50 &minus; 0.5Q, so <span class="c-dem">MR = 50 &minus; Q</span>. <span class="c-mc">MC = 20</span> per T-shirt; the license costs 200 per day (the fixed cost).`
+    : `Many identical workshops: your factory takes the market price as given, so every dozen brings in <span class="c-dem">MR = P</span>. Costs: the Topic 6 cost table (FC = ${M.FC}).`;
+
+  // graph A: TR and TC
+  const A=frame($("gA"),{fitb:22,xmax:M.n,xstep:M.xstep,y:M.yA,xlab,ylab:"TR, TC ('000 VND per "+M.per+")"});
+  if(ghost){ curve(A,M.tr,all,cDem,{opacity:0.22}); curve(A,M.tc,all,cMC,{opacity:0.22}); }
+  if(t>0){ band(A,qs,M.tr,M.tc,1,cGain); band(A,qs,M.tr,M.tc,-1,cLoss); }
+  curve(A,M.tr,qs,cDem); curve(A,M.tc,qs,cMC);
+  if(reached) vdash(A,M.best,cMut);
+  if(t>0 && t<M.n){ // slopes at the current point: slope of TR = MR, slope of TC = MC
+    const dx=M.n*0.07;
+    [[M.tr,M.mr,cDem],[M.tc,M.mc,cMC]].forEach(([f,s,c])=>{ const y=f(t), k=s(t);
+      el("line",{x1:A.X(t-dx),y1:A.Y(y-k*dx),x2:A.X(t+dx),y2:A.Y(y+k*dx),stroke:c,"stroke-width":7,"stroke-opacity":0.25,"stroke-linecap":"round"},A.P); });
+  }
+  const g0=pi(t), gc=g0>=0?cGain:cLoss;
+  el("line",{x1:A.X(t),x2:A.X(t),y1:A.Y(M.tc(t)),y2:A.Y(M.tr(t)),stroke:gc,"stroke-width":5},A.Top);
+  dot(A,t,M.tr(t),cDem,true); dot(A,t,M.tc(t),cMC,true);
+  const lft=t>M.n*0.18;
+  label(A,A.X(t)+(lft?-10:10),(A.Y(M.tc(t))+A.Y(M.tr(t)))/2+4,(g0>=0?"Profit ":"Loss ")+fmt(Math.abs(g0)),gc,lft?"end":"start");
+  const endq=ghost?M.n:t;
+  if(endq>0){ label(A,A.X(endq)+7,A.Y(M.tr(endq))+4,"TR",cDem); label(A,A.X(endq)+7,A.Y(M.tc(endq))+(Math.abs(M.tr(endq)-M.tc(endq))<(A.y1-A.y0)*0.05?16:4),"TC",cMC); }
+  legend("lgA",[{c:"--dem",t:"Total revenue TR"},{c:"--mc",t:"Total cost TC"},{c:"--gain",t:"Profit",box:1},{c:"--loss",t:"Loss",box:1}]);
+
+  // graph B: profit
+  const B=frame($("gB"),{fitb:22,xmax:M.n,xstep:M.xstep,y:M.yB,ny:4,xlab,ylab:"Profit"});
+  if(ghost) curve(B,pi,all,cInk,{opacity:0.2});
+  if(t>0){ band(B,qs,pi,()=>0,1,cGain); band(B,qs,pi,()=>0,-1,cLoss); }
+  curve(B,pi,qs,cInk);
+  dot(B,t,g0,gc,true);
+  if(reached){ vdash(B,M.best,cMut); const pb=pi(M.best); dot(B,M.best,pb,cGain,false);
+    label(B,B.X(M.best),B.Y(pb)-10,"Highest profit: "+fmt(pb)+" at Q = "+fmt(M.best),cInk,"middle"); }
+
+  // graph C: MR and MC
+  const C=frame($("gC"),{fitb:22,xmax:M.n,xstep:M.xstep,y:M.yC,ny:5,xlab,ylab:"'000 VND per "+M.unit});
+  if(M.mono){ curve(C,M.dem,all,cDem,{opacity:0.5,"stroke-dasharray":"6 5","stroke-width":2});
+    label(C,C.X(M.n)+5,C.Y(M.dem(M.n))+4,"D",cDem); }
+  if(ghost){ curve(C,M.mr,all,cDem,{opacity:0.22}); curve(C,M.mc,all,cMC,{opacity:0.22}); }
+  if(t>0){ band(C,qs,M.mr,M.mc,1,cGain); band(C,qs,M.mr,M.mc,-1,cLoss); }
+  curve(C,M.mr,qs,cDem); curve(C,M.mc,qs,cMC);
+  if(reached){ vdash(C,M.best,cMut);
+    if(M.mono){ const pb=M.dem(M.best);
+      el("line",{x1:C.X(M.best),x2:C.X(M.best),y1:C.Y(M.mc(M.best)),y2:C.Y(pb),stroke:cDem,"stroke-width":2,"stroke-dasharray":"2 3"},C.P);
+      el("line",{x1:C.X(0),x2:C.X(M.best),y1:C.Y(pb),y2:C.Y(pb),stroke:cDem,"stroke-width":1.2,"stroke-dasharray":"2 3"},C.P);
+      dot(C,M.best,pb,cDem,true); label(C,C.X(M.best)+8,C.Y(pb)-6,"P = "+fmt(pb)+" (from demand)",cDem);
+      dot(C,M.best,M.mc(M.best),cInk,true);
+    } }
+  if(t>0){ dot(C,t,M.mr(t),cDem,true); dot(C,t,M.mc(t),cMC,true); }
+  const eq=ghost?M.n:t;
+  if(eq>0){ const a=M.mr(eq), b=M.mc(eq), close=Math.abs(a-b)<(C.y1-C.y0)*0.06;
+    label(C,C.X(eq)+7,C.Y(Math.max(a,C.y0))+(close?(a>=b?-4:16):4),M.mono?"MR":"MR = P",cDem);
+    label(C,C.X(eq)+7,C.Y(Math.min(b,C.y1))+(close?(a>=b?16:-4):4),"MC",cMC); }
+  legend("lgC",M.mono
+    ? [{c:"--dem",t:"Marginal revenue MR"},{c:"--dem",t:"Demand D",dash:1},{c:"--mc",t:"Marginal cost MC"}]
+    : [{c:"--dem",t:"MR = P"},{c:"--mc",t:"MC of each dozen"}]);
+
+  // readouts
+  const k=M.disc?Math.max(1,Math.ceil(t-1e-7)):t;
+  const tiles=[["Q",fmt(t)],["TR",fmt(M.tr(t))],["TC",fmt(M.tc(t))],[g0>=0?"Profit":"Loss",fmt(g0),gc],
+    [M.disc?`MR (dozen ${k})`:"MR",fmt(M.mr(k)),cDem],[M.disc?`MC (dozen ${k})`:"MC",fmt(M.mc(k)),cMC]];
+  if(M.mono) tiles.splice(1,0,["P (demand)",fmt(M.dem(t))]);
+  $("ro1").innerHTML=tiles.map(([a,b,c])=>`<div class="tile"><div class="k">${a}</div><div class="v"${c?` style="color:${c}"`:""}>${b}</div></div>`).join("");
+  $("cap1").innerHTML=caption1(M,t);
+  table1(M,t);
+  $("play1").innerHTML=playing===1?"&#10074;&#10074; Pause":"&#9654; Play";
+}
+
+function caption1(M,t){
+  const atBest=Math.abs(t-M.best)<1e-6, pi=q=>M.tr(q)-M.tc(q);
+  if(t<1e-9) return `Q = 0: no revenue, but you still pay the fixed cost (${fmt(M.FC)}). Profit = <b>${fmt(-M.FC)}</b>. Press play.`;
+  if(M.mono){
+    const mr=M.mr(t), d=mr-20;
+    if(atBest) return `<b>Top of the hill.</b> At Q = 30, MR = MC = 20: the last T-shirt adds as much revenue as cost. Profit = <b>250</b>, the highest possible. Charge the price on the demand curve: P = 35.`;
+    if(Math.abs(d)<0.5) return `At Q = ${fmt(t)}, MR (${fmt(mr)}) is almost equal to MC (20): profit is near its top.`;
+    return d>0 ? `At Q = ${fmt(t)}: MR = ${fmt(mr)} &gt; MC = 20. One more T-shirt adds about <b>${fmt(d)}</b> to profit, so <b>keep going</b>. The gap between TR and TC is still widening.`
+               : `At Q = ${fmt(t)}: MR = ${fmt(mr)} &lt; MC = 20. One more T-shirt <b>lowers</b> profit by about ${fmt(-d)}. You went too far: the gap is closing. MR keeps falling because selling more means cutting the price on every T-shirt.`;
+  }
+  const C=M.C, P=M.P, k=Math.max(1,Math.ceil(t-1e-7)), d=P-C.MC[k];
+  if(atBest){
+    let s=`<b>Top of the hill.</b> Q = ${M.best}, profit = <b>${fmt(pi(M.best))}</b>. Every dozen so far had MC &le; MR. `;
+    s+= M.best<M.n ? `The next one costs MC = ${fmt(C.MC[M.best+1])} &gt; MR = ${fmt(P)}, so stop here.` : `Every dozen in the table has MC &le; MR.`;
+    if(pi(M.best)< -M.FC-EPS) s+=` <b>But</b> the loss is bigger than the fixed cost (${fmt(M.FC)}): producing nothing is better. See Part 2.`;
+    return s;
+  }
+  let s=`Dozen ${k}: MR = ${fmt(P)}, MC = ${fmt(C.MC[k])}. `;
+  s+= d>0 ? `MR &gt; MC, so this dozen <b>adds ${fmt(d)}</b> to profit.` : d<0 ? `MR &lt; MC, so this dozen <b>lowers</b> profit by ${fmt(-d)}.` : `MR = MC: this dozen adds nothing.`;
+  s+= ` Profit at Q = ${fmt(t)}: <b>${fmt(pi(t))}</b>.`;
+  if(t>M.best+EPS) s+=` You went past the top (Q = ${M.best}).`;
+  return s;
+}
+
+function table1(M,t){
+  const rows=[]; const pi=q=>M.tr(q)-M.tc(q);
+  if(M.mono){
+    rows.push("<thead><tr><th>Q</th><th>P</th><th>TR</th><th>TC</th><th>Profit</th><th>MR</th><th>MC</th></tr></thead><tbody>");
+    const cur=Math.round(t/10)*10;
+    for(let q=0;q<=60;q+=10){ const v=pi(q);
+      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${q===30?"best":""}"><td>${q}</td><td>${fmt(M.dem(q))}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${fmt(M.mr(q))}</td><td>20</td></tr>`); }
+    rows.push("</tbody>");
+  } else {
+    rows.push("<thead><tr><th>Q</th><th>TR</th><th>TC</th><th>Profit</th><th>MR</th><th>MC</th><th>MR &minus; MC</th></tr></thead><tbody>");
+    const cur=Math.round(t);
+    for(let q=0;q<=M.n;q++){ const v=pi(q), d=q?M.P-M.C.MC[q]:NaN;
+      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${q===M.best&&t>=M.best-1e-6?"best":""}"><td>${q}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${q?fmt(M.P):""}</td><td>${q?fmt(M.C.MC[q]):""}</td><td class="${d>0?"pos":d<0?"neg":""}">${q?(d>0?"+":"")+fmt(d):""}</td></tr>`); }
+    rows.push("</tbody>");
+  }
+  $("tb1").innerHTML="<table>"+rows.join("")+"</table>";
+  $("tb1").querySelectorAll("tr[data-q]").forEach(r=>r.onclick=()=>{ stop(); st.t=+r.dataset.q; render1(); });
+}
+
+// ---------------------------------------------------------------- part 2: smooth cost curves
+// Hypothetical smooth costs, on their own (not the Part 1 table):
+//   TC = 72 + 20Q - 4Q^2 + 0.5Q^3, so FC = 72, AVC = 20 - 4Q + 0.5Q^2, MC = 20 - 8Q + 1.5Q^2.
+//   min AVC = 12 at Q = 4 (shutdown price), min ATC = 26 at Q = 6 (exit price); MC passes through both minima.
+//   If the firm produces, Q solves P = MC on the rising part: Q = (8 + sqrt(6P - 56)) / 3.
+const S2={FC:72, qmax:10, pMin:5, pMax:50, minAVC:12, qAVC:4, minATC:26, qATC:6,
+  tc:q=>72+20*q-4*q*q+0.5*q*q*q, vc:q=>20*q-4*q*q+0.5*q*q*q,
+  avc:q=>20-4*q+0.5*q*q, atc:q=>72/q+20-4*q+0.5*q*q, mc:q=>20-8*q+1.5*q*q,
+  qOf:p=>6*p>=56 ? (8+Math.sqrt(6*p-56))/3 : 0};
+function zoneOf(p){ return p>=S2.minATC-1e-7 ? "profit" : p>=S2.minAVC-1e-7 ? "loss" : "shut"; }
+function render2(){
+  st.p2=Math.min(Math.max(st.p2,S2.pMin),S2.pMax);
+  const th=[S2.minATC,S2.minAVC].find(v=>Math.abs(st.p2-v)<1e-6), p=th!==undefined?th:Math.round(st.p2*10)/10;
+  const q=S2.qOf(p), open=q>0?p*q-S2.tc(q):-S2.FC, shut=-S2.FC, zone=zoneOf(p), Qc=zone==="shut"?0:q;
+  const cDem=cssv("--dem"), cMC=cssv("--mc"), cATC=cssv("--atc"), cAVC=cssv("--avc"), cGain=cssv("--gain"), cLoss=cssv("--loss"), cMid=cssv("--mid"), cInk=cssv("--ink");
+  const zc={profit:cGain,loss:cMid,shut:cLoss}[zone];
+  const r=$("p2"); r.min=S2.pMin; r.max=S2.pMax; r.value=p; $("p2o").textContent=fmt(p);
+  const n=S2.qmax, ymax=60, Mq={disc:false};
+  const qs=a=>samples(Mq,a,n);
+  const qMCtop=(8+Math.sqrt(64-6*(20-ymax)))/3;   // where MC leaves the top of the graph
+
+  // cost curves, price, profit box
+  const D=frame($("gD"),{xmax:n,xstep:1,y:[0,ymax],xlab:"Q (dozens per hour)",ylab:"'000 VND per dozen",m:{r:112}});
+  if(Qc>0){ const a=S2.atc(q), top=Math.max(a,p), bot=Math.min(a,p), c=p>=a?cGain:cLoss;
+    el("rect",{x:D.X(0),y:D.Y(top),width:D.X(q)-D.X(0),height:Math.max(0.5,D.Y(bot)-D.Y(top)),fill:c,"fill-opacity":0.3,stroke:c,"stroke-width":1.2},D.P);
+    el("line",{x1:D.X(0),x2:D.X(q),y1:D.Y(a),y2:D.Y(a),stroke:cATC,"stroke-width":1.2,"stroke-dasharray":"3 3"},D.P);
+    label(D,(D.X(0)+D.X(q))/2,(D.Y(top)+D.Y(bot))/2+4,(open>=0?"Profit ":"Loss ")+fmt(Math.abs(open)),c,"middle");
+  }
+  [[S2.minATC,cATC,"Exit price "+fmt(S2.minATC)],[S2.minAVC,cAVC,"Shutdown price "+fmt(S2.minAVC)]].forEach(([y,c,t])=>{
+    el("line",{x1:D.X(0),x2:D.X(n),y1:D.Y(y),y2:D.Y(y),stroke:c,"stroke-width":1,"stroke-dasharray":"2 4"},D.P);
+    label(D,D.X(n)+6,D.Y(y)+4,t,c); });
+  curve(D,S2.avc,qs(0.3),cAVC); curve(D,S2.atc,qs(1),cATC); curve(D,S2.mc,qs(0.3),cMC);
+  dot(D,S2.qAVC,S2.minAVC,cAVC,false); dot(D,S2.qATC,S2.minATC,cATC,false);
+  el("line",{x1:D.X(0),x2:D.X(n),y1:D.Y(p),y2:D.Y(p),stroke:cDem,"stroke-width":2.8},D.P);
+  const near=[S2.minATC,S2.minAVC].find(v=>Math.abs(p-v)<ymax*0.05&&Math.abs(p-v)>1e-6);
+  label(D,D.X(n)+6,D.Y(p)+(near===undefined?4:(p>near?-6:17)),"P = MR = "+fmt(p),cDem);
+  label(D,D.X(qMCtop)+6,D.Y(ymax)+14,"MC",cMC);
+  label(D,D.X(n)-4,D.Y(S2.atc(n))-8,"ATC",cATC,"end");
+  label(D,D.X(n)-4,D.Y(S2.avc(n))+16,"AVC",cAVC,"end");
+  if(Qc>0){ el("line",{x1:D.X(q),x2:D.X(q),y1:D.Y(p),y2:D.Y(0),stroke:cInk,"stroke-width":1.2,"stroke-dasharray":"3 3"},D.P);
+    dot(D,q,p,cInk,true); label(D,D.X(q)+4,D.Y(0)-6,"Q = "+fmt(q),cInk,"start"); }
+  else { dot(D,0,p,cLoss,true); label(D,D.X(0)+8,D.Y(p)+18,"Q = 0: shut down",cLoss); }
+  legend("lgD",[{c:"--dem",t:"Price P = MR"},{c:"--mc",t:"MC"},{c:"--atc",t:"ATC"},{c:"--avc",t:"AVC"},{c:"--gain",t:"Profit",box:1},{c:"--loss",t:"Loss",box:1}]);
+
+  // price zones
+  const zl=[["profit",cGain,`P &ge; ${fmt(S2.minATC)}`,"Profit:","produce and stay"],
+            ["loss",cMid,`${fmt(S2.minAVC)} &le; P &lt; ${fmt(S2.minATC)}`,"Loss:","produce now, exit in the long run"],
+            ["shut",cLoss,`P &lt; ${fmt(S2.minAVC)}`,"Shut down now,","exit in the long run"]];
+  $("zones").innerHTML=zl.map(([z,c,rng,h,t])=>`<div class="zone${z===zone?" on":""}" style="--zc:${c}">${z===zone?`<span class="here">&larr; P = ${fmt(p)}</span>`:""}<span class="rng">${rng}</span><br><b>${h}</b> ${t}</div>`).join("")
+    +`<p class="small" style="margin:4px 2px 0">${fmt(S2.minATC)} = min ATC (at Q = ${S2.qATC}); ${fmt(S2.minAVC)} = min AVC (at Q = ${S2.qAVC}).</p>`;
+
+  // supply curve: the vertical axis below min AVC, then MC above min AVC
+  const E=frame($("gE"),{xmax:n,xstep:2,y:[0,ymax],ny:4,xlab:"Q",ylab:"P",m:{l:36,r:14,b:24}});
+  curve(E,S2.mc,qs(0.3),cMC,{"stroke-width":1.5,"stroke-opacity":0.3});
+  el("line",{x1:E.X(0),x2:E.X(0),y1:E.Y(0),y2:E.Y(S2.minAVC),stroke:cMC,"stroke-width":3},E.P);
+  el("line",{x1:E.X(0),x2:E.X(S2.qAVC),y1:E.Y(S2.minAVC),y2:E.Y(S2.minAVC),stroke:cMC,"stroke-width":1.2,"stroke-dasharray":"2 3"},E.P);
+  curve(E,S2.mc,qs(S2.qAVC),cMC,{"stroke-width":2.8});
+  el("line",{x1:E.X(0),x2:E.X(n),y1:E.Y(p),y2:E.Y(p),stroke:cDem,"stroke-width":1.2,"stroke-dasharray":"3 3"},E.P);
+  dot(E,Qc,p,cDem,true);
+  label(E,E.X(qMCtop)-6,E.Y(ymax)+14,"S",cMC,"end");
+
+  // decision text
+  const tagTxt={profit:"Produce and stay",loss:"Produce now, exit in the long run",shut:"Shut down now"}[zone];
+  let s=`<span class="tag" style="background:${zc}">${tagTxt}</span><br>`;
+  if(zone==="profit"){
+    s+=`P = ${fmt(p)} &ge; min ATC = ${fmt(S2.minATC)}. Produce <b>${fmt(q)} dozen</b>, where P = MC. `;
+    s+= open>0.05 ? `Profit = (P &minus; ATC) &times; Q = (${fmt(p)} &minus; ${fmt(S2.atc(q))}) &times; ${fmt(q)} = <b class="c-gain">${fmt(open)}</b>.` : `Profit is <b>zero</b>: the price just covers ATC, so you earn your opportunity costs. Stay.`;
+  } else if(zone==="loss"){
+    s+=`min AVC = ${fmt(S2.minAVC)} &le; P = ${fmt(p)} &lt; min ATC = ${fmt(S2.minATC)}. `;
+    s+= Math.abs(open-shut)<0.05 ? `Producing ${fmt(q)} dozen loses ${fmt(-open)}, the same as shutting down: you are just at the shutdown price.`
+      : `Producing ${fmt(q)} dozen loses <b class="c-loss">${fmt(-open)}</b>; shutting down loses the whole fixed cost, <b class="c-loss">${fmt(S2.FC)}</b>. Revenue (${fmt(p*q)}) covers VC (${fmt(S2.vc(q))}) and pays part of the rent. <b>Keep producing</b> this season, but <b>exit</b> when the lease ends if the price stays this low.`;
+  } else {
+    s+=`P = ${fmt(p)} &lt; min AVC = ${fmt(S2.minAVC)}. `+(q>0?`Even the best output (${fmt(q)} dozen) loses <b class="c-loss">${fmt(-open)}</b>, more than the fixed cost (${fmt(S2.FC)}).`:`Every output loses more than the fixed cost (${fmt(S2.FC)}).`)
+      +` Revenue does not even pay the workers and materials. <b>Shut down now</b> (Q = 0), and exit in the long run.`;
+  }
+  $("dec2").innerHTML=s;
+
+  const qq=q>0?q:0;
+  $("cmp2").innerHTML=`<table class="cmp"><thead><tr><th></th><th>Produce ${fmt(qq)} dozen</th><th>Shut down (Q = 0)</th></tr></thead><tbody>
+    <tr><td>Revenue TR = P &times; Q</td><td>${fmt(p*qq)}</td><td>0</td></tr>
+    <tr><td>Variable cost VC</td><td>${fmt(S2.vc(qq))}</td><td>0</td></tr>
+    <tr><td>Fixed cost FC (sunk)</td><td>${fmt(S2.FC)}</td><td>${fmt(S2.FC)}</td></tr>
+    <tr><td><b>Profit</b></td><td class="${open>=0?"pos":"neg"}">${fmt(open)}</td><td class="neg">${fmt(shut)}</td></tr>
+    <tr><td>Better choice</td><td>${Qc>0?"&#10004;":""}</td><td>${Qc===0?"&#10004;":""}</td></tr></tbody></table>`;
+  $("play2").innerHTML=playing===2?"&#10074;&#10074; Pause":"&#9654; Play";
+}
+
+// ---------------------------------------------------------------- animation
+let playing=null, raf=null, lastTs=0;
+function stop(){ playing=null; if(raf) cancelAnimationFrame(raf); raf=null; $("play1").innerHTML="&#9654; Play"; $("play2").innerHTML="&#9654; Play"; }
+function play(w){
+  if(playing===w){ stop(); render(); return; }
+  stop();
+  if(w===1){ const M=M1(); if(st.t>=M.n-1e-6) st.t=0; }
+  else { if(st.p2<=S2.pMin+1e-6) st.p2=S2.pMax; }
+  playing=w; lastTs=performance.now(); raf=requestAnimationFrame(tick); render();
+}
+function tick(ts){
+  if(!playing) return;
+  const dt=Math.min(0.1,(ts-lastTs)/1000); lastTs=ts;
+  if(playing===1){
+    const M=M1(), prev=st.t, nt=prev+M.n/12*st.speed*dt;
+    if($("stopTop").checked && prev<M.best-1e-6 && nt>=M.best-1e-6){ st.t=M.best; stop(); render1(); return; }
+    if(nt>=M.n){ st.t=M.n; stop(); render1(); return; }
+    st.t=nt; render1();
+  } else {
+    const C=S2, ex=S2, prev=st.p2, np=prev-(ex.pMax-ex.pMin)/16*st.speed*dt;
+    if($("stopTh").checked) for(const th of [C.minATC,C.minAVC]) if(prev>th+1e-6 && np<=th+1e-6){ st.p2=th; stop(); render2(); return; }
+    if(np<=ex.pMin){ st.p2=ex.pMin; stop(); render2(); return; }
+    st.p2=np; render2();
+  }
+  raf=requestAnimationFrame(tick);
+}
+function step1(dir){ stop(); const M=M1(), s=M.step;
+  st.t = dir>0 ? Math.min(M.n,(Math.floor(st.t/s+1e-6)+1)*s) : Math.max(0,(Math.ceil(st.t/s-1e-6)-1)*s); render1(); }
+function step2(dir){ stop(); st.p2 = dir>0 ? Math.floor(st.p2+1e-6)+1 : Math.ceil(st.p2-1e-6)-1; render2(); }
+
+// ---------------------------------------------------------------- wiring
+$("play1").onclick=()=>play(1); $("play2").onclick=()=>play(2);
+$("back1").onclick=()=>step1(-1); $("fwd1").onclick=()=>step1(1);
+$("reset1").onclick=()=>{ stop(); st.t=0; render1(); };
+$("up2").onclick=()=>step2(1); $("down2").onclick=()=>step2(-1);
+$("reset2").onclick=()=>{ stop(); st.p2=S2.pMax; render2(); };
+$("scrub1").oninput=e=>{ stop(); st.t=+e.target.value; render1(); };
+$("p1").oninput=e=>{ st.p1=+e.target.value; $("p1o").textContent=fmt(st.p1); render1(); };
+$("p2").oninput=e=>{ stop(); st.p2=+e.target.value; render2(); };
+$("ghost1").onchange=()=>render1();
+document.querySelectorAll("[data-firm]").forEach(b=>b.onclick=()=>{ stop(); st.firm=b.dataset.firm; st.t=0; save(); render1(); });
+document.querySelectorAll("[data-speed]").forEach(b=>b.onclick=()=>{ st.speed=+b.dataset.speed;
+  document.querySelectorAll("[data-speed]").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.speed===st.speed)); });
+function syncP1(){ const ex=EX[st.ex], r=$("p1"); r.min=ex.pMin; r.max=ex.pMax; r.value=st.p1; $("p1o").textContent=fmt(st.p1); }
+$("exSel").onchange=e=>{ stop(); st.ex=e.target.value; const ex=EX[st.ex]; st.p1=ex.p0; st.t=0; syncP1(); save(); render(); };
+
+function goPart(p){ stop(); st.part=p;
+  document.querySelectorAll(".part").forEach(s=>s.hidden=+s.dataset.part!==p);
+  document.querySelectorAll("[data-go]").forEach(b=>{ if(+b.dataset.go===p) b.setAttribute("aria-current","step"); else b.removeAttribute("aria-current"); });
+  $("exctl").hidden=p!==1; $("prev").disabled=p===1; $("next").disabled=p===2; $("pos").textContent=`Part ${p} of 2`;
+  save(); render(); }
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>goPart(+b.dataset.go));
+$("prev").onclick=()=>{ goPart(1); window.scrollTo({top:0,behavior:"smooth"}); };
+$("next").onclick=()=>{ goPart(2); window.scrollTo({top:0,behavior:"smooth"}); };
+document.addEventListener("keydown",e=>{
+  const t=e.target; if(e.altKey||e.ctrlKey||e.metaKey) return;
+  if(t && (t.tagName==="INPUT"||t.tagName==="SELECT"||t.tagName==="TEXTAREA")) return;
+  if(e.key===" "){ e.preventDefault(); play(st.part); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); st.part===1?step1(1):step2(1); }
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); st.part===1?step1(-1):step2(-1); }
+});
+
+function applyTheme(t){
+  if(t==="auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme",t);
+  document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.themeBtn===t));
+  try{ localStorage.setItem(THEME_KEY,t); }catch(e){}
+  render();
+}
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeBtn));
+function render(){ if(st.part===1) render1(); else render2(); }
+
+// ---------------------------------------------------------------- start
+$("exSel").value=st.ex; syncP1();
+let th0="auto"; try{ th0=localStorage.getItem(THEME_KEY)||"auto"; }catch(e){}
+if(th0!=="auto") document.documentElement.setAttribute("data-theme",th0);
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.themeBtn===th0));
+goPart(st.part);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+let rzT=null; window.addEventListener("resize",()=>{ clearTimeout(rzT); rzT=setTimeout(render,80); });
+// redraw when a graph box changes size (window resize, zoom, layout change), but not while animating
+if(window.ResizeObserver){ const sizes=new Map(); const ro=new ResizeObserver(es=>{ let changed=false;
+  es.forEach(e=>{ const k=Math.round(e.contentRect.width)+"x"+Math.round(e.contentRect.height); if(sizes.get(e.target)!==k){ sizes.set(e.target,k); changed=true; } });
+  if(changed && !playing){ clearTimeout(rzT); rzT=setTimeout(render,30); } });
+  document.querySelectorAll("svg.fit").forEach(sv=>ro.observe(sv)); }
+})();
+</script>
+</body>
+</html>
