@@ -23,7 +23,7 @@
     -> AVC 14/12/11/12/14/17/21.4/27.5, ATC 74/42/31/27/26/27/30/35, MC 14/10/9/15/22/32/48/70 (efficient scale Q = 5).
   - What-ifs (as in the deck): rent +30 -> ATC(5) = 32; thread +2 per dozen -> MC of the 5th dozen 24.
   All numbers are hypothetical. Colors follow the worksheet: MC red, ATC orange, AVC green,
-  AFC gray (no blue: blue is demand). MP uses MC's color and AP uses AVC's color (MC = w/MP, AVC = w/AP).
+  AFC gray (no blue: blue is demand). MP uses MC's color and AP uses AVC's color.
   Source: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 13. Cengage.
 -->
 <style>
@@ -446,7 +446,7 @@ footer .settings{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;mar
     <div class="col">
       <div class="card key">
         <h3>Mirror images</h3>
-        <p>On the graphs, MP has the same color as MC, and AP the same color as AVC. That is because <b>MC = w / MP</b> and <b>AVC = w / AP</b>.</p>
+        <p>On the graphs, MP has the same color as MC, and AP the same color as AVC.</p>
         <p>When MP is at its highest, MC is at its lowest. When AP is at its highest, AVC is at its lowest.</p>
       </div>
       <div class="card">
@@ -838,7 +838,7 @@ function renderGraphs(){
     ]});
     const w=num(state.t1.wage), n=c1.length-1, box=g("ins3");
     if(n>=2 && fin(w) && fin(c1[1].MP) && fin(c1[n].MP) && c1[1].MP>0 && c1[n].MP>0){
-      box.innerHTML=`<h3>Same wage, different cost per T-shirt</h3><p>Every worker costs <b>${fmtc(w)}</b> per hour. Worker ${fmt(a[1].L)} sews ${fmt(c1[1].MP)} T-shirts, so each of those T-shirts costs ${fmt2(w/c1[1].MP)}. Worker ${fmt(a[n].L)} sews only ${fmt(c1[n].MP)}, so each costs <b>${fmt2(w/c1[n].MP)}</b>.</p><p>Extra cost per extra T-shirt = w / MP. As MP falls, it rises: that is marginal cost, and it is why TC bends upward.</p>`;
+      box.innerHTML=`<h3>Same wage, different cost per T-shirt</h3><p>Every worker costs <b>${fmtc(w)}</b> per hour. Worker ${fmt(a[1].L)} adds ${fmt(c1[1].MP)} T-shirts, but worker ${fmt(a[n].L)} adds only ${fmt(c1[n].MP)}.</p><p>Each extra worker costs the same but adds fewer T-shirts, so each extra T-shirt costs more. That is why TC bends upward.</p>`;
     } else box.innerHTML="<h3>Same wage, different cost per T-shirt</h3><p>Fill in L, Q and the wage to see this.</p>";
   }
   // ---------------- Table 2
