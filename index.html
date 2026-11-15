@@ -22,6 +22,13 @@
   - Table 2, the cost table: Q = 0..8 dozen T-shirts per hour, TC = 60, 74, 84, 93, 108, 130, 162, 210, 280, FC 60
     -> AVC 14/12/11/12/14/17/21.4/27.5, ATC 74/42/31/27/26/27/30/35, MC 14/10/9/15/22/32/48/70 (efficient scale Q = 5).
   - What-ifs (as in the deck): rent +30 -> ATC(5) = 32; thread +2 per dozen -> MC of the 5th dozen 24.
+  Practice numbers (added 2026-11-15, header "Numbers" menu; see EXAMPLES in the script):
+  - Practice A (small workshop): Table 1 FC 40, wage 20, Q = 0/10/26/40/50/58/64;
+    Table 2 FC 40, TC = 40/52/60/66/76/92/116/150/198 -> MC 12/8/6/10/16/24/34/48, efficient scale Q = 5 (ATC 18.4).
+  - Practice B (large factory): Table 1 FC 100, wage 40, Q = 0/25/60/90/112/127/137;
+    Table 2 FC 120, TC = 120/150/172/192/218/252/298/360/444 -> MC 30/22/20/26/34/46/62/84, efficient scale Q = 6 (ATC 49.7).
+  - "New practice example" makes random whole-number tables (MP rises then falls; ATC and AVC U-shaped with
+    one clear minimum, efficient scale at Q = 4..6). Saved browser work is kept under key prodCostExplorer.v3.
   All numbers are hypothetical. Colors follow the worksheet: MC red, ATC orange, AVC green,
   AFC gray (no blue: blue is demand). MP uses MC's color and AP uses AVC's color.
   Source: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 13. Cengage.
@@ -53,7 +60,9 @@ body{background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3","Source
 header{padding:14px 20px 10px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;max-width:1280px;margin:0 auto}
 h1{font-size:21px;margin:0;font-weight:700}
 header p{margin:0;color:var(--ink2);font-size:14.5px;flex:1 1 300px}
-.hdr-ctl{display:flex;gap:8px;flex-wrap:wrap}
+.hdr-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.exctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--ink2)}
+.exctl select{font:inherit;font-size:14px;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
 
 /* step navigation */
 nav.steps{position:sticky;top:0;z-index:4;background:var(--bg);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
@@ -162,6 +171,16 @@ footer .settings{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;mar
   <h1>Production and Cost Explorer</h1>
   <p>Follow your factory, a garment workshop that sews T-shirts, from workers to output to costs. Money in '000 VND per hour.</p>
   <div class="hdr-ctl">
+    <span class="exctl">
+      <label for="exSel">Numbers</label>
+      <select id="exSel" title="Pick a set of numbers. Only L, Q (Table 1) and Q, TC (Table 2) are given; you compute the rest.">
+        <option value="class">Your factory (class example)</option>
+        <option value="A">Practice A: small workshop</option>
+        <option value="B">Practice B: large factory</option>
+        <option value="random" hidden>Random practice example</option>
+      </select>
+      <button class="primary" id="btnRandom" title="Make a new random set of numbers to practice on">New practice example</button>
+    </span>
     <span class="seg" role="group" aria-label="Mode">
       <button id="modeHand" aria-pressed="true" title="You type every calculated cell; the graphs plot what you type">Fill by hand</button>
       <button id="modeAuto" aria-pressed="false" title="Every calculated cell is filled in for you">Auto-calculate</button>
@@ -298,7 +317,7 @@ footer .settings{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;mar
           <div class="legend" id="lg3"></div><svg id="g3" viewBox="0 0 440 300"></svg>
         </div>
       </div>
-      <p class="small">Click a row of the table to follow one point (for example L = 3, Q = 72) through every step of the flip.</p>
+      <p class="small">Click a row of the table to follow one point (for example L = 3) through every step of the flip.</p>
     </div>
   </div>
 </section>
@@ -474,7 +493,7 @@ footer .settings{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;mar
   <span>All numbers are hypothetical. Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 13. Cengage.</span>
   <span class="settings">
     <label><input type="checkbox" id="midpts" checked> Plot MP and MC halfway between rows</label>
-    <button class="mini" id="btnDefault">Load example numbers</button>
+    <button class="mini" id="btnDefault">Back to the class example</button>
     <button class="mini" id="btnClearAll" title="Keeps only L (Table 1) and Q (Table 2)">Clear everything</button>
   </span>
 </footer>
@@ -501,16 +520,48 @@ const VIEWS = {
   p3:{tk:"t1", keys:["L","Q","FC","VC","TC"]},
   p4:{tk:"t2", keys:["Q","TC","FC","VC","AFC","AVC","ATC","MC"], edit:true}
 };
-const KEY = "prodCostExplorer.v2";
+const KEY = "prodCostExplorer.v3";
 
-function freshState(){
-  return { mode:"hand",
-    t1:{fc:60, wage:30, rows:[0,20,50,72,88,100,108].map((q,i)=>({L:String(i),Q:String(q)}))},
-    t2:{fc:60, rows:[60,74,84,93,108,130,162,210,280].map((tc,i)=>({Q:String(i),TC:String(tc)}))} };
+// ---- example numbers. "class" = the Topic 6 deck and worksheet. A and B are fixed practice sets
+// (hypothetical; checked: MP rises then falls, ATC and AVC strictly U-shaped with one minimum,
+// A: efficient scale Q = 5, min AVC Q = 3; B: efficient scale Q = 6, min AVC Q = 3).
+// "random" sets come from randomT1/randomT2 below and are kept in the saved state.
+const EXAMPLES = {
+  class:{name:"Your factory (class example)", t1:{fc:60, wage:30, Q:[0,20,50,72,88,100,108]}, t2:{fc:60, TC:[60,74,84,93,108,130,162,210,280]}},
+  A:{name:"Practice A: small workshop", t1:{fc:40, wage:20, Q:[0,10,26,40,50,58,64]}, t2:{fc:40, TC:[40,52,60,66,76,92,116,150,198]}},
+  B:{name:"Practice B: large factory", t1:{fc:100, wage:40, Q:[0,25,60,90,112,127,137]}, t2:{fc:120, TC:[120,150,172,192,218,252,298,360,444]}}
+};
+function stateFrom(id, ex){
+  return { mode:"hand", ex:id,
+    t1:{fc:ex.t1.fc, wage:ex.t1.wage, rows:ex.t1.Q.map((q,i)=>({L:String(i),Q:String(q)}))},
+    t2:{fc:ex.t2.fc, rows:ex.t2.TC.map((tc,i)=>({Q:String(i),TC:String(tc)}))} };
 }
-// Saved work from an older table size is dropped so the current rows show.
-function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)), f=freshState();
-  return s&&s.t1&&s.t2&&s.t1.rows.length===f.t1.rows.length&&s.t2.rows.length===f.t2.rows.length ? s : null; }catch(e){ return null; } }
+function freshState(){ return stateFrom("class", EXAMPLES.class); }
+
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[rint(0,a.length-1)];
+// Index of the unique minimum if a[1..] strictly falls, then strictly rises, with a gap of at least 0.2
+// at the bottom (so the minimum is still unique after rounding to one decimal); -1 otherwise.
+function uShape(a){ let k=1; for(let q=2;q<a.length;q++) if(a[q]<a[k]) k=q;
+  for(let q=2;q<a.length;q++){ if(q<=k&&!(a[q]<a[q-1])) return -1; if(q>k&&!(a[q]>a[q-1])) return -1; }
+  if(k>1&&a[k-1]-a[k]<0.2) return -1; if(k<a.length-1&&a[k+1]-a[k]<0.2) return -1; return k; }
+// Table 1: L = 0..6, whole-number MP that (usually) rises once, then strictly falls and stays positive.
+function randomT1(){ for(;;){ const mp=[rint(8,25)]; if(Math.random()<0.8) mp.push(mp[0]+rint(3,12));
+  while(mp.length<6) mp.push(mp[mp.length-1]-rint(2,8)); if(mp[5]<2) continue;
+  const Q=[0]; mp.forEach(m=>Q.push(Q[Q.length-1]+m));
+  return {fc:pick([40,50,60,70,80,90,100,120]), wage:pick([20,25,30,35,40,50]), Q}; } }
+// Table 2: Q = 0..8 dozens, whole-number MC that falls to a minimum at Q = 2 or 3, then rises faster and faster.
+// Kept only if ATC and AVC are clean U-shapes, efficient scale is Q = 4..6 and min AVC comes before it.
+function randomT2(){ for(;;){ const fc=pick([40,50,60,70,80,90,100,120]), kmin=pick([2,3]), mc=[rint(10,30)];
+  while(mc.length<kmin) mc.push(mc[mc.length-1]-rint(2,6));
+  let inc=rint(3,7); while(mc.length<8){ mc.push(mc[mc.length-1]+inc); inc+=rint(2,6); }
+  if(mc.some(m=>m<=0)) continue;
+  const TC=[fc]; mc.forEach(m=>TC.push(TC[TC.length-1]+m));
+  const qa=uShape(TC.map((t,q)=>q?t/q:NaN)), qv=uShape(TC.map((t,q)=>q?(t-fc)/q:NaN));
+  if(qa<4||qa>6||qv<2||qv>=qa) continue;
+  return {fc, TC}; } }
+
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY));
+  return s&&s.t1&&s.t2&&s.t1.rows&&s.t2.rows ? s : null; }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 let state = load() || freshState();
 
@@ -660,10 +711,19 @@ function setMode(m){
 }
 document.getElementById("modeHand").onclick=()=>setMode("hand");
 document.getElementById("modeAuto").onclick=()=>setMode("auto");
-document.getElementById("btnDefault").onclick=()=>{
-  const m=state.mode; state=freshState(); state.mode=m; save(); selRow=null;
-  buildTk("t1"); buildTk("t2"); document.querySelectorAll(".status").forEach(s=>s.textContent=""); renderAll();
-};
+const exSel=document.getElementById("exSel"), exRandomOpt=exSel.querySelector('option[value="random"]');
+function showEx(){ exRandomOpt.hidden = state.ex!=="random"; exSel.value = state.ex||"class"; }
+// Loads a new set of numbers: only the given columns (L, Q / Q, TC) are filled, so students compute the rest.
+function loadExample(id){
+  const m=state.mode;
+  state = id==="random" ? stateFrom("random",{t1:randomT1(), t2:randomT2()}) : stateFrom(id, EXAMPLES[id]);
+  state.mode=m; save(); selRow=null; marks(document);
+  buildTk("t1"); buildTk("t2"); document.querySelectorAll(".status").forEach(s=>s.textContent="");
+  showEx(); preset("reset");
+}
+exSel.onchange=()=>loadExample(exSel.value);
+document.getElementById("btnRandom").onclick=()=>loadExample("random");
+document.getElementById("btnDefault").onclick=()=>loadExample("class");
 document.getElementById("btnClearAll").onclick=()=>{
   ["t1","t2"].forEach(tk=>{ const keep=INPUTS[tk][0]; state[tk].rows.forEach(r=>Object.keys(r).forEach(k=>{ if(k!==keep) r[k]=""; })); });
   marks(document); save(); syncAll(); document.querySelectorAll(".status").forEach(s=>s.textContent=""); renderAll();
@@ -1046,6 +1106,7 @@ let th0="auto"; try{ th0=localStorage.getItem(THEME_KEY)||"auto"; }catch(e){}
 document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.themeBtn===th0));
 if(th0!=="auto") document.documentElement.setAttribute("data-theme",th0);
 setMode(state.mode||"hand");
+showEx();
 goPart(part,false);
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>renderAll());
 })();
