@@ -7,17 +7,21 @@
 <!--
   Production and Cost Explorer (Topic 6, Theory of the Firm).
   Standalone page, no internet needed: open it in any browser.
-  Two tables, as in Mankiw ch. 13 (Table 1 production and total cost; Table 2 the cost table)
-  and as in the Topic 6 deck and worksheet:
-  Story: your factory, a hypothetical CMT garment workshop sewing basic T-shirts (was Campus Boba until 2026-11-05).
+  Restructured 2026-11-15 into six short parts that follow the Topic 6 deck:
+    1. The production function        (Table 1: L, Q)
+    2. Marginal and average product   (Table 1: MP, AP; diminishing MP)
+    3. From production to total cost  (Table 1: FC, VC, TC; the "flip" animation)
+    4. The cost table                 (Table 2: FC, VC, AFC, AVC, ATC, MC; the four cost curves)
+    5. Why MC cuts ATC at its lowest point (GPA analogy, efficient scale)
+    6. What if costs change? (sliders for FC, materials cost per dozen and the wage; added 2026-11-15)
+    7. Recap
+  Story: your factory, a hypothetical CMT garment workshop sewing basic T-shirts.
   - Table 1, the sewing line: L = 0..6, Q = 0/20/50/72/88/100/108 T-shirts per hour; FC 60 per hour,
     wage 30 per worker per hour -> TC = 60, 90, ..., 240 ('000 VND).
     MP = 20, 30, 22, 16, 12, 8; AP = 20, 25, 24, 22, 20, 18.
   - Table 2, the cost table: Q = 0..8 dozen T-shirts per hour, TC = 60, 74, 84, 93, 108, 130, 162, 210, 280, FC 60
     -> AVC 14/12/11/12/14/17/21.4/27.5, ATC 74/42/31/27/26/27/30/35, MC 14/10/9/15/22/32/48/70 (efficient scale Q = 5).
-    Rows Q = 7 and 8 added 2026-11-10 (same as the Topic 6 deck) so the U-shape shows clearly.
-  Graphs 1-3 and the "From production to cost" tab use Table 1; graph 4 uses Table 2.
-  Fill in the tables and the graphs draw and connect the points as you type.
+  - What-ifs (as in the deck): rent +30 -> ATC(5) = 32; thread +2 per dozen -> MC of the 5th dozen 24.
   All numbers are hypothetical. Colors follow the worksheet: MC red, ATC orange, AVC green,
   AFC gray (no blue: blue is demand). MP uses MC's color and AP uses AVC's color (MC = w/MP, AVC = w/AP).
   Source: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 13. Cengage.
@@ -25,195 +29,455 @@
 <style>
 :root{
   --bg:#f7f6f3; --surface:#fcfcfb; --ink:#1d1d1b; --ink2:#55534e; --muted:#8a877f;
-  --line:#dedbd3; --grid:#ebe8e1; --accent:#7a1f2b;
+  --line:#dedbd3; --grid:#ebe8e1; --accent:#7a1f2b; --accent-soft:#f4e9ea;
   --prod:#2b2a27; --mc:#c62828; --atc:#d97706; --avc:#2e7d32; --afc:#6b7280;
   --ok:#e3f1e4; --bad:#fbe3e1; --sel:#f3eee2; --input:#ffffff;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
-    --line:#34332f; --grid:#262523; --accent:#e8a0a8;
+    --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
     --prod:#e6e4de; --mc:#f0524f; --atc:#d18a10; --avc:#23a356; --afc:#8a8f98;
     --ok:#1d3322; --bad:#3d1f1d; --sel:#2a2823; --input:#222220;
   }
 }
 :root[data-theme="dark"]{
   --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
-  --line:#34332f; --grid:#262523; --accent:#e8a0a8;
+  --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
   --prod:#e6e4de; --mc:#f0524f; --atc:#d18a10; --avc:#23a356; --afc:#8a8f98;
   --ok:#1d3322; --bad:#3d1f1d; --sel:#2a2823; --input:#222220;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 "Source Sans 3","Source Sans Pro","Segoe UI",system-ui,sans-serif}
-header{padding:14px 20px 10px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline}
-h1{font-size:20px;margin:0;font-weight:700}
-header p{margin:0;color:var(--ink2);font-size:14px}
-.theme{margin-left:auto}
-main{display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);gap:16px;padding:16px 20px}
-@media (max-width:1100px){main{grid-template-columns:1fr}}
-@media (max-width:600px){main{padding:12px 16px}header{padding:12px 16px}}
-.left{display:flex;flex-direction:column;gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
-.card h2{font-size:16px;margin:0 0 6px}
-.card h2 small{font-weight:400;color:var(--ink2);font-size:13.5px}
-.params{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:8px;font-size:14px}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3","Source Sans Pro","Segoe UI",system-ui,sans-serif}
+header{padding:14px 20px 10px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;max-width:1280px;margin:0 auto}
+h1{font-size:21px;margin:0;font-weight:700}
+header p{margin:0;color:var(--ink2);font-size:14.5px;flex:1 1 300px}
+.hdr-ctl{display:flex;gap:8px;flex-wrap:wrap}
+
+/* step navigation */
+nav.steps{position:sticky;top:0;z-index:4;background:var(--bg);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+nav.steps ol{list-style:none;margin:0 auto;padding:8px 20px;display:flex;gap:4px;max-width:1280px;overflow-x:auto}
+nav.steps li{flex:1 1 0;min-width:120px}
+nav.steps button{width:100%;text-align:left;display:flex;gap:8px;align-items:center;border:1px solid transparent;background:transparent;padding:6px 8px;border-radius:8px;color:var(--ink2);font-size:14px;line-height:1.2}
+nav.steps button .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font-weight:700;font-size:13px}
+nav.steps button[aria-current=step]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:600}
+nav.steps button[aria-current=step] .n{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+nav.steps button:hover{border-color:var(--line)}
+
+main{max-width:1280px;margin:0 auto;padding:18px 20px 8px}
+@media (max-width:600px){main,header{padding-left:16px;padding-right:16px} nav.steps ol{padding:8px 16px}}
+.part[hidden]{display:none}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.part h2{font-size:26px;margin:2px 0 6px;line-height:1.2}
+.lead{font-size:17px;color:var(--ink2);margin:0 0 16px;max-width:900px}
+.body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media (max-width:1000px){.body{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h3{font-size:15px;margin:0 0 6px;color:var(--ink)}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.card ul{margin:4px 0 0;padding-left:20px}
+.card li{margin:3px 0}
+.formula{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:15px;margin:2px 0 4px}
+.formula span{white-space:nowrap}
+.key{border-left:4px solid var(--accent);background:var(--accent-soft)}
+.try{border-left:4px solid var(--muted)}
+.insight{font-size:15px;color:var(--ink)}
+.insight b{color:var(--accent)}
+.params{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:8px;font-size:14.5px}
 .params label{display:flex;gap:6px;align-items:center;color:var(--ink2)}
 .params input[type=number]{width:72px}
 input[type=number],input.cell{font:inherit;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:5px;padding:3px 5px}
-.btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
-button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
 button:hover{border-color:var(--muted)}
 button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
 button[aria-pressed=true]{background:var(--sel);border-color:var(--muted);font-weight:600}
-button.mini{padding:2px 8px;font-size:12.5px}
+button.mini{padding:2px 8px;font-size:13px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{border:0;border-radius:0}
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
 th{font-weight:600;color:var(--ink2);padding:4px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
 th small{display:block;font-weight:400;color:var(--muted);font-size:11px}
 td{padding:2px;text-align:center;border-bottom:1px solid var(--grid)}
 td.sep,th.sep{border-left:2px solid var(--line)}
-input.cell{width:100%;min-width:38px;text-align:center;padding:3px 1px}
+input.cell{width:100%;min-width:40px;text-align:center;padding:3px 1px}
 input.cell:disabled{background:transparent;border-color:transparent;color:var(--muted)}
 input.cell[readonly]{background:transparent;border-color:transparent}
+input.cell.given{font-weight:600}
 input.cell.ok{background:var(--ok)}
 input.cell.bad{background:var(--bad);border-color:var(--mc)}
 tr.hl td{background:var(--sel)}
-.note{font-size:13px;color:var(--ink2);margin:8px 0 0}
-.status{font-size:13.5px;margin-top:6px;min-height:20px;color:var(--ink2)}
-.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media (max-width:760px){.grid4{grid-template-columns:1fr}}
-.grid4.one{grid-template-columns:minmax(0,860px);justify-content:center}
+.status{font-size:14px;margin-top:6px;min-height:20px;color:var(--ink2)}
+.small{font-size:13px;color:var(--muted)}
 .plot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 4px;position:relative}
-.plot[hidden]{display:none}
-.plot h3{font-size:14px;margin:2px 30px 2px 4px;font-weight:600}
+.plot h3{font-size:14.5px;margin:2px 4px;font-weight:600}
 .plot h3 small{font-weight:400;color:var(--muted)}
-.hidebtn{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;line-height:1;font-size:17px;color:var(--muted);border-color:transparent;background:transparent}
-.hidebtn:hover{color:var(--ink);border-color:var(--line)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--ink2);margin:0 4px 2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--ink2);margin:0 4px 2px}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 svg{display:block;width:100%;height:auto;overflow:visible}
 svg text{fill:var(--ink2);font-size:12px;font-family:inherit}
 svg .axis{stroke:var(--muted);stroke-width:1}
 svg .gridl{stroke:var(--grid);stroke-width:1}
 svg .lbl{fill:var(--ink);font-weight:600;font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:4px 8px;border-radius:6px;white-space:nowrap;display:none;z-index:5}
-.rot-controls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 8px}
-.rot-controls input[type=range]{width:220px;max-width:100%}
-.caption{font-size:15px;min-height:44px;margin:4px 0 0;color:var(--ink)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:4px 8px;border-radius:6px;white-space:nowrap;display:none;z-index:9}
+.rot-controls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 4px 8px}
+.rot-controls input[type=range]{width:200px;max-width:100%}
+.caption{font-size:15px;min-height:46px;margin:4px 6px 4px;color:var(--ink)}
 .caption b{color:var(--accent)}
-.small{font-size:12.5px;color:var(--muted)}
+.plot-tabs{display:flex;gap:8px;align-items:center;margin:2px 4px 8px;flex-wrap:wrap}
+
+/* curve toggles in part 4 */
+.curves{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.curves li{display:flex;gap:10px;align-items:flex-start}
+.curves button{flex:none;min-width:64px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.curves button .sw{width:16px;height:3px;border-radius:2px;display:inline-block}
+.curves button[aria-pressed=false]{opacity:.55;font-weight:400}
+.curves span.txt{font-size:15px;padding-top:4px}
+
+.slider{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:2px 10px;align-items:center;margin:8px 0 10px}
+.slider label{grid-column:1 / -1;font-size:15px}
+.slider input[type=range]{width:100%;accent-color:var(--accent)}
+.slider output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.ba td,.ba th{padding:4px 6px;text-align:left;white-space:normal}
+.ba td.up{color:var(--mc);font-weight:600}.ba td.down{color:var(--avc);font-weight:600}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:15px}
+.chain span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.chain i{color:var(--muted);font-style:normal}
+.recap td,.recap th{text-align:left;padding:6px 8px;font-size:15px;white-space:normal}
+.recap td:first-child{font-weight:600;white-space:nowrap}
+
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 6px;flex-wrap:wrap}
+.foot .spacer{flex:1}
+footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+footer .settings{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-left:auto}
+.c-mc{color:var(--mc);font-weight:700}.c-atc{color:var(--atc);font-weight:700}.c-avc{color:var(--avc);font-weight:700}.c-afc{color:var(--afc);font-weight:700}
 </style>
 </head>
 <body>
 <header>
   <h1>Production and Cost Explorer</h1>
-  <p>Your factory (a CMT garment workshop): fill in the tables and watch the curves draw themselves. Money in '000 VND per hour.</p>
-  <div class="theme seg" role="group" aria-label="Theme">
-    <button data-theme-btn="auto" aria-pressed="true">Auto</button>
-    <button data-theme-btn="light" aria-pressed="false">Light</button>
-    <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+  <p>Follow your factory, a garment workshop that sews T-shirts, from workers to output to costs. Money in '000 VND per hour.</p>
+  <div class="hdr-ctl">
+    <span class="seg" role="group" aria-label="Mode">
+      <button id="modeHand" aria-pressed="true" title="You type every calculated cell; the graphs plot what you type">Fill by hand</button>
+      <button id="modeAuto" aria-pressed="false" title="Every calculated cell is filled in for you">Auto-calculate</button>
+    </span>
+    <span class="seg" role="group" aria-label="Theme">
+      <button data-theme-btn="auto" aria-pressed="true">Auto</button>
+      <button data-theme-btn="light" aria-pressed="false">Light</button>
+      <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+    </span>
   </div>
 </header>
 
+<nav class="steps" aria-label="Parts">
+  <ol>
+    <li><button data-go="1"><span class="n">1</span>Production function</button></li>
+    <li><button data-go="2"><span class="n">2</span>Marginal product</button></li>
+    <li><button data-go="3"><span class="n">3</span>Production to total cost</button></li>
+    <li><button data-go="4"><span class="n">4</span>The cost curves</button></li>
+    <li><button data-go="5"><span class="n">5</span>MC and ATC</button></li>
+    <li><button data-go="6"><span class="n">6</span>What if costs change?</button></li>
+    <li><button data-go="7"><span class="n">7</span>Recap</button></li>
+  </ol>
+</nav>
+
 <main>
-  <!-- ======================= TABLES ======================= -->
-  <section class="left">
-    <div class="card">
-      <div class="params" style="margin-bottom:0">
-        <span class="seg" role="group" aria-label="Mode">
-          <button id="modeHand" aria-pressed="true" title="Every cell is typed by hand; the graphs plot what you type">Fill by hand</button>
-          <button id="modeAuto" aria-pressed="false" title="Type the first two columns; everything else is calculated">Auto-calculate</button>
-        </span>
+<!-- ============================================================ PART 1 -->
+<section class="part" data-part="1">
+  <div class="kicker">Part 1 of 7</div>
+  <h2>The production function</h2>
+  <p class="lead">In the short run your factory has one cutting table and a fixed line of sewing machines: capital is fixed. The only thing you can change by tomorrow is how many workers you hire. So the question is simple: <b>what happens to output as you add workers?</b></p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <h3>The sewing line</h3>
+        <p class="small">You can change the numbers. Every later part uses this table.</p>
+        <div class="tablewrap" data-view="p1"></div>
+        <div class="btns"><button class="mini" data-add="t1">+ Row</button><button class="mini" data-del="t1">&minus; Row</button></div>
       </div>
-      <div class="btns">
-        <button class="primary" id="btnCheck">Check my answers</button>
-        <button id="btnFill">Show answers</button>
-        <button id="btnClearCalc">Clear calculated columns</button>
-        <button id="btnClearIn" title="Keeps only L (Table 1) and Q (Table 2)">Clear everything</button>
-        <button id="btnDefault">Load example</button>
+      <div class="card key">
+        <h3>Key idea</h3>
+        <p>A <b>production function</b> shows how much output a firm gets from its inputs: Q = f(K, L).</p>
+        <p>In the short run, capital is fixed at K&#773;, so Q = f(K&#773;, L) depends only on the number of workers L.</p>
       </div>
-      <div class="status" id="status" aria-live="polite"></div>
+      <div class="card try">
+        <h3>Look at the graph</h3>
+        <p>Does each new worker add the same number of T-shirts? Where does the curve get flatter?</p>
+      </div>
     </div>
-
-    <div class="card" data-table="t1">
-      <h2>Table 1. The sewing line <small>production and total cost</small></h2>
-      <div class="params">
-        <label>Fixed cost FC <input type="number" data-param="fc" step="any"></label>
-        <label>Wage w per worker <input type="number" data-param="wage" step="any"></label>
-      </div>
-      <div class="tablewrap"><table><thead></thead><tbody></tbody></table></div>
-      <div class="btns"><button class="mini" data-add>+ Row</button><button class="mini" data-del>&minus; Row</button></div>
-      <p class="note">MP = &Delta;Q/&Delta;L, AP = Q/L, VC = w &times; L, TC = FC + VC. Used by graphs 1&ndash;3 and the production-to-cost tab.</p>
+    <div class="col">
+      <div class="plot"><h3>Production function <small>Q = f(K&#773;, L)</small></h3><div class="legend" id="lg1"></div><svg id="g1" viewBox="0 0 440 300"></svg></div>
+      <p class="small">Hover over a row or a point to highlight it.</p>
     </div>
+  </div>
+</section>
 
-    <div class="card" data-table="t2">
-      <h2>Table 2. The cost table <small>output in dozens of T-shirts</small></h2>
-      <div class="params">
-        <label>Fixed cost FC <input type="number" data-param="fc" step="any"></label>
+<!-- ============================================================ PART 2 -->
+<section class="part" data-part="2" hidden>
+  <div class="kicker">Part 2 of 7</div>
+  <h2>Marginal and average product</h2>
+  <p class="lead">How much does <b>one more worker</b> add? That number is the marginal product. It is the slope of the production function from Part 1.</p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <div class="formula"><span><b>MP<sub>L</sub></b> = &Delta;Q / &Delta;L</span><span><b>AP<sub>L</sub></b> = Q / L</span></div>
+        <div class="tablewrap" data-view="p2"></div>
+        <div class="btns" data-part-btns></div>
+        <div class="status"></div>
       </div>
-      <div class="tablewrap"><table><thead></thead><tbody></tbody></table></div>
-      <div class="btns"><button class="mini" data-add>+ Row</button><button class="mini" data-del>&minus; Row</button></div>
-      <p class="note">VC = TC &minus; FC, AFC = FC/Q, AVC = VC/Q, ATC = TC/Q, MC = &Delta;TC/&Delta;Q. Used by graph 4.</p>
+      <div class="card insight" id="ins2"></div>
+      <div class="card key">
+        <h3>Diminishing marginal product</h3>
+        <ul>
+          <li>The 2nd worker helps a lot: one cuts, one sews (<b>specialization</b>, as on an assembly line).</li>
+          <li>From the 3rd worker on, everyone shares one cutting table and the same few machines. Workers wait for a free machine, so each new worker adds <b>fewer</b> T-shirts.</li>
+          <li>That is why the production function gets <b>flatter</b> as L grows.</li>
+        </ul>
+      </div>
     </div>
-    <p class="small">Empty cells are skipped. Hover or click a row to highlight its points in the graphs.</p>
-  </section>
-
-  <!-- ======================= GRAPHS ======================= -->
-  <section>
-    <div class="tabs seg" role="tablist">
-      <button id="tabGraphs" role="tab" aria-pressed="true">Four graphs</button>
-      <button id="tabRotate" role="tab" aria-pressed="false">From production to cost</button>
+    <div class="col">
+      <div class="plot"><h3>Production function <small>the slope between two points is MP</small></h3><div class="legend" id="lg2a"></div><svg id="g2a" viewBox="0 0 440 250"></svg></div>
+      <div class="plot"><h3>Marginal and average product</h3><div class="legend" id="lg2b"></div><svg id="g2b" viewBox="0 0 440 250"></svg></div>
+      <p class="small">Hover over a row: the red segment on the top graph is the slope that row's MP measures.</p>
     </div>
+  </div>
+</section>
 
-    <div id="paneGraphs">
-      <div class="params">
-        <label><input type="checkbox" id="midpts" checked> Plot MP and MC halfway between rows</label>
-        <label>Per-dozen graph: y-axis max <input type="number" id="ymaxUnit" value="80" step="any"></label>
-      </div>
-      <div class="params">
-        <span class="small" style="color:var(--ink2)">Show:</span>
-        <span class="seg" role="group" aria-label="Show graphs">
-          <button data-show="1" aria-pressed="true">1. Production</button>
-          <button data-show="2" aria-pressed="true">2. MP and AP</button>
-          <button data-show="3" aria-pressed="true">3. Total cost</button>
-          <button data-show="4" aria-pressed="true">4. Cost per dozen</button>
-        </span>
-        <button id="showAll">Show all</button>
-      </div>
-      <div class="grid4" id="grid4">
-        <div class="plot" data-plot="1"><button class="hidebtn" data-hide="1" title="Hide this graph" aria-label="Hide graph 1">&times;</button><h3>1. Production function <small>Table 1</small></h3><div class="legend" id="lg1"></div><svg id="g1" viewBox="0 0 440 300"></svg></div>
-        <div class="plot" data-plot="2"><button class="hidebtn" data-hide="2" title="Hide this graph" aria-label="Hide graph 2">&times;</button><h3>2. Marginal and average product <small>Table 1</small></h3><div class="legend" id="lg2"></div><svg id="g2" viewBox="0 0 440 300"></svg></div>
-        <div class="plot" data-plot="3"><button class="hidebtn" data-hide="3" title="Hide this graph" aria-label="Hide graph 3">&times;</button><h3>3. Total cost <small>Table 1</small></h3><div class="legend" id="lg3"></div><svg id="g3" viewBox="0 0 440 300"></svg></div>
-        <div class="plot" data-plot="4"><button class="hidebtn" data-hide="4" title="Hide this graph" aria-label="Hide graph 4">&times;</button><h3>4. Cost per dozen <small>Table 2</small></h3><div class="legend" id="lg4"></div><svg id="g4" viewBox="0 0 440 300"></svg></div>
-        <p class="small" id="noneShown" hidden>All graphs are hidden. Click a button above to show one.</p>
-      </div>
-      <p class="note">MP has the same color as MC, and AP the same color as AVC: MC = w/MP and AVC = w/AP. When MP is at its highest, MC is at its lowest; when AP is at its highest, AVC is at its lowest.</p>
-    </div>
-
-    <div id="paneRotate" hidden>
-      <div class="plot">
-        <div class="rot-controls">
-          <button class="primary" id="play">&#9654; Play</button>
-          <span class="seg" role="group" aria-label="Step">
-            <button data-stage="0" aria-pressed="true">1. Q = f(L)</button>
-            <button data-stage="1" aria-pressed="false">2. Flip</button>
-            <button data-stage="2" aria-pressed="false">3. &times; wage</button>
-            <button data-stage="3" aria-pressed="false">4. + FC</button>
-          </span>
-          <input type="range" id="stage" min="0" max="3" step="0.005" value="0" aria-label="Step slider">
-          <label class="small"><input type="checkbox" id="ghost" checked> Keep a faint copy</label>
+<!-- ============================================================ PART 3 -->
+<section class="part" data-part="3" hidden>
+  <div class="kicker">Part 3 of 7</div>
+  <h2>From production to total cost</h2>
+  <p class="lead">Now put prices on the inputs. Rent and the machine lease are paid no matter how many T-shirts you sew. Each worker is paid by the hour. <b>How does the production function turn into a total cost curve?</b></p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <div class="params">
+          <label>Fixed cost FC <input type="number" data-param="fc" data-t="t1" step="any"></label>
+          <label>Wage w per worker <input type="number" data-param="wage" data-t="t1" step="any"></label>
         </div>
-        <svg id="rot" viewBox="0 0 640 520"></svg>
-        <p class="caption" id="caption"></p>
-        <p class="small">Uses Table 1. Drag the slider slowly, or click a row of Table 1 to follow one point (for example L = 3, Q = 72) through every step.</p>
+        <div class="formula"><span><b>VC</b> = w &times; L</span><span><b>TC</b> = FC + VC</span></div>
+        <div class="tablewrap" data-view="p3"></div>
+        <div class="btns" data-part-btns></div>
+        <div class="status"></div>
+      </div>
+      <div class="card insight" id="ins3"></div>
+      <div class="card key">
+        <h3>Key idea</h3>
+        <p>The TC curve gets <b>steeper</b> because the production function gets <b>flatter</b>. Every worker costs the same wage, but with diminishing MP each extra T-shirt needs more labor time, so it costs more.</p>
       </div>
     </div>
-  </section>
+    <div class="col">
+      <div class="plot">
+        <div class="plot-tabs">
+          <span class="seg" role="tablist">
+            <button id="tabFlip" aria-pressed="true">Watch the flip</button>
+            <button id="tabTC" aria-pressed="false">Total cost graph</button>
+          </span>
+        </div>
+        <div id="paneFlip">
+          <div class="rot-controls">
+            <button class="primary" id="play">&#9654; Play</button>
+            <span class="seg" role="group" aria-label="Step">
+              <button data-stage="0" aria-pressed="true">1. Q = f(L)</button>
+              <button data-stage="1" aria-pressed="false">2. Flip</button>
+              <button data-stage="2" aria-pressed="false">3. &times; wage</button>
+              <button data-stage="3" aria-pressed="false">4. + FC</button>
+            </span>
+            <input type="range" id="stage" min="0" max="3" step="0.005" value="0" aria-label="Step slider">
+            <label class="small"><input type="checkbox" id="ghost" checked> Keep a faint copy</label>
+          </div>
+          <svg id="rot" viewBox="0 0 640 520"></svg>
+          <p class="caption" id="caption"></p>
+        </div>
+        <div id="paneTC" hidden>
+          <div class="legend" id="lg3"></div><svg id="g3" viewBox="0 0 440 300"></svg>
+        </div>
+      </div>
+      <p class="small">Click a row of the table to follow one point (for example L = 3, Q = 72) through every step of the flip.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PART 4 -->
+<section class="part" data-part="4" hidden>
+  <div class="kicker">Part 4 of 7</div>
+  <h2>The cost table and the cost curves</h2>
+  <p class="lead">To talk about the cost of <b>one unit</b>, we count output in dozens of T-shirts per hour. You are given output Q and total cost TC. Fill in the rest, then build the four cost curves one at a time.</p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <div class="params"><label>Fixed cost FC <input type="number" data-param="fc" data-t="t2" step="any"></label></div>
+        <div class="formula">
+          <span><b>VC</b> = TC &minus; FC</span><span><b class="c-afc">AFC</b> = FC / Q</span><span><b class="c-avc">AVC</b> = VC / Q</span>
+          <span><b class="c-atc">ATC</b> = TC / Q = AFC + AVC</span><span><b class="c-mc">MC</b> = &Delta;TC / &Delta;Q</span>
+        </div>
+        <div class="tablewrap" data-view="p4"></div>
+        <div class="btns" data-part-btns><button class="mini" data-add="t2">+ Row</button><button class="mini" data-del="t2">&minus; Row</button></div>
+        <div class="status"></div>
+      </div>
+      <div class="card">
+        <p><b>ATC</b> answers: how much does a dozen cost <b>on average</b>?<br><b>MC</b> answers: how much does the <b>next</b> dozen add?</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="plot"><h3>Cost per dozen</h3><div class="legend" id="lg4"></div><svg id="g4" viewBox="0 0 440 300"></svg></div>
+      <div class="card">
+        <h3>Build the curves <button class="mini" id="buildStep" style="margin-left:8px">Start over, one at a time</button></h3>
+        <ul class="curves">
+          <li><button data-curve="AFC" aria-pressed="true"><i class="sw" style="background:var(--afc)"></i>AFC</button><span class="txt">Always <b>falls</b>: the rent is spread over more dozens.</span></li>
+          <li><button data-curve="AVC" aria-pressed="true"><i class="sw" style="background:var(--avc)"></i>AVC</button><span class="txt" id="txtAVC">Falls, then <b>rises</b>: diminishing marginal product.</span></li>
+          <li><button data-curve="ATC" aria-pressed="true"><i class="sw" style="background:var(--atc)"></i>ATC</button><span class="txt">ATC = AFC + AVC is <b>U-shaped</b>.</span></li>
+          <li><button data-curve="MC" aria-pressed="true"><i class="sw" style="background:var(--mc)"></i>MC</button><span class="txt">Falls, then <b>rises</b>. Each MC is plotted halfway between two quantities.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PART 5 -->
+<section class="part" data-part="5" hidden>
+  <div class="kicker">Part 5 of 7</div>
+  <h2>Why does MC cut ATC at its lowest point?</h2>
+  <p class="lead">Look at Part 4 again: the MC curve crosses AVC and ATC exactly at their lowest points. This is not a coincidence. <b>Think of your GPA.</b></p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <h3>Your GPA</h3>
+        <ul>
+          <li>Your next course grade is the <b>marginal</b> grade.</li>
+          <li>Below your average &rArr; your GPA <b>falls</b>. Above your average &rArr; your GPA <b>rises</b>.</li>
+        </ul>
+        <h3 style="margin-top:10px">Same for costs</h3>
+        <ul>
+          <li><span class="c-mc">MC</span> &lt; <span class="c-atc">ATC</span> &rArr; ATC falls.</li>
+          <li><span class="c-mc">MC</span> &gt; <span class="c-atc">ATC</span> &rArr; ATC rises.</li>
+          <li>So MC crosses ATC where ATC stops falling and starts rising: its <b>lowest point</b>. The same holds for AVC.</li>
+        </ul>
+      </div>
+      <div class="card key insight" id="ins5"></div>
+    </div>
+    <div class="col">
+      <div class="plot"><h3>MC, ATC and AVC <small>from the cost table in Part 4</small></h3><div class="legend" id="lg5"></div><svg id="g5" viewBox="0 0 440 300"></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PART 6 -->
+<section class="part" data-part="6" hidden>
+  <div class="kicker">Part 6 of 7</div>
+  <h2>What if costs change?</h2>
+  <p class="lead">The landlord raises the rent. Thread gets more expensive. Workers get a raise. <b>Which curves move, and which stay put?</b> Predict first, then drag the sliders.</p>
+  <div class="body">
+    <div class="col">
+      <div class="card">
+        <h3>Change the costs</h3>
+        <div class="slider">
+          <label for="sFC">Fixed cost FC <span class="small">(rent, machine lease)</span></label>
+          <input type="range" id="sFC" min="0" max="150" step="5">
+          <output id="oFC"></output>
+        </div>
+        <div class="slider">
+          <label for="sVC">Materials cost per dozen <span class="small">(thread, labels)</span></label>
+          <input type="range" id="sVC" min="-6" max="10" step="1" value="0">
+          <output id="oVC"></output>
+        </div>
+        <div class="slider">
+          <label for="sW">Wage <span class="small">(scales the wage bill)</span></label>
+          <input type="range" id="sW" min="-30" max="50" step="5" value="0">
+          <output id="oW"></output>
+        </div>
+        <div class="btns">
+          <button data-preset="reset" class="primary">Back to the original costs</button>
+          <button data-preset="rent">Rent +30</button>
+          <button data-preset="thread">Thread +2 per dozen</button>
+          <button data-preset="wage">Wage +20%</button>
+        </div>
+        <p class="small" style="margin-top:8px">The starting point is the cost table from Part 4. For the wage slider, all variable cost is treated as wages.</p>
+      </div>
+      <div class="card insight" id="moved"></div>
+      <div class="card"><h3>Before and after</h3><div class="tablewrap" id="beforeAfter"></div></div>
+    </div>
+    <div class="col">
+      <div class="plot"><h3>Cost per dozen <small>faded curves = before the change</small></h3><div class="legend" id="lg6"></div><svg id="g6" viewBox="0 0 440 300"></svg></div>
+      <div class="card key">
+        <h3>What to look for</h3>
+        <ul>
+          <li>Move only <b>FC</b>: AFC and ATC move, but <span class="c-avc">AVC</span> and <span class="c-mc">MC</span> stay put. Fixed costs do not affect the cost of the <b>next</b> unit.</li>
+          <li>Move a <b>variable</b> cost: AVC, ATC and MC move, but <span class="c-afc">AFC</span> stays put.</li>
+          <li>Watch the efficient scale: where does the lowest point of ATC go?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PART 7 -->
+<section class="part" data-part="7" hidden>
+  <div class="kicker">Part 7 of 7</div>
+  <h2>Recap: one chain of reasoning</h2>
+  <p class="lead">Everything in this page follows from one fact: in the short run, some inputs are fixed.</p>
+  <div class="card" style="margin-bottom:14px">
+    <div class="chain">
+      <span>Capital is fixed</span><i>&rarr;</i><span>Diminishing MP</span><i>&rarr;</i><span>Production function gets flatter</span><i>&rarr;</i>
+      <span>TC gets steeper</span><i>&rarr;</i><span>MC rises</span><i>&rarr;</i><span>MC cuts AVC and ATC at their lowest points</span><i>&rarr;</i><span>U-shaped ATC</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>The cost vocabulary</h3>
+      <div class="tablewrap"><table class="recap">
+        <thead><tr><th>Term</th><th>Formula</th><th>Question it answers</th></tr></thead>
+        <tbody>
+          <tr><td>MP<sub>L</sub></td><td>&Delta;Q / &Delta;L</td><td>How many more T-shirts does one more worker sew?</td></tr>
+          <tr><td>AP<sub>L</sub></td><td>Q / L</td><td>How many T-shirts per worker?</td></tr>
+          <tr><td>FC, VC, TC</td><td>TC = FC + VC</td><td>What does producing Q cost in total?</td></tr>
+          <tr><td class="c-afc">AFC</td><td>FC / Q</td><td>How much rent does each unit carry?</td></tr>
+          <tr><td class="c-avc">AVC</td><td>VC / Q</td><td>What do the variable inputs cost per unit?</td></tr>
+          <tr><td class="c-atc">ATC</td><td>TC / Q</td><td>What does a typical unit cost?</td></tr>
+          <tr><td class="c-mc">MC</td><td>&Delta;TC / &Delta;Q</td><td>What does the next unit add?</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="col">
+      <div class="card key">
+        <h3>Mirror images</h3>
+        <p>On the graphs, MP has the same color as MC, and AP the same color as AVC. That is because <b>MC = w / MP</b> and <b>AVC = w / AP</b>.</p>
+        <p>When MP is at its highest, MC is at its lowest. When AP is at its highest, AVC is at its lowest.</p>
+      </div>
+      <div class="card">
+        <h3>Fixed costs and the next unit</h3>
+        <p>A higher rent moves AFC and ATC, but not AVC or MC (try it in Part 6). Fixed costs do not affect the cost of the <b>next</b> unit. Keep this in mind for Topic 7.</p>
+      </div>
+      <div class="card try">
+        <h3>Next: Topic 7</h3>
+        <p>Many workshops like yours sell at the same market price. How many dozens should you sew? The answer uses the MC and ATC curves from this page.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <button id="prev">&larr; Previous</button>
+  <span class="spacer"></span>
+  <span class="small" id="pos"></span>
+  <span class="spacer"></span>
+  <button class="primary" id="next">Next &rarr;</button>
+</div>
 </main>
+
+<footer>
+  <span>All numbers are hypothetical. Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 13. Cengage.</span>
+  <span class="settings">
+    <label><input type="checkbox" id="midpts" checked> Plot MP and MC halfway between rows</label>
+    <button class="mini" id="btnDefault">Load example numbers</button>
+    <button class="mini" id="btnClearAll" title="Keeps only L (Table 1) and Q (Table 2)">Clear everything</button>
+  </span>
+</footer>
 
 <div class="tip" id="tip"></div>
 
@@ -221,17 +485,22 @@ svg .lbl{fill:var(--ink);font-weight:600;font-size:12.5px;paint-order:stroke;str
 (function(){
 "use strict";
 // ---------------------------------------------------------------- data
-const TABLES = {
-  t1: { inputs:["L","Q"], cols:[
-    {k:"L",h:"L",sub:"workers"}, {k:"Q",h:"Q",sub:"T-shirts/hour"},
-    {k:"MP",h:"MP",noFirst:true,sep:true}, {k:"AP",h:"AP",noFirst:true},
-    {k:"FC",h:"FC",sep:true}, {k:"VC",h:"VC"}, {k:"TC",h:"TC"} ]},
-  t2: { inputs:["Q","TC"], cols:[
-    {k:"Q",h:"Q",sub:"dozens/hour"}, {k:"TC",h:"TC"},
-    {k:"FC",h:"FC",sep:true}, {k:"VC",h:"VC"},
-    {k:"AFC",h:"AFC",noFirst:true,sep:true}, {k:"AVC",h:"AVC",noFirst:true}, {k:"ATC",h:"ATC",noFirst:true}, {k:"MC",h:"MC",noFirst:true} ]}
+const COLS = {
+  t1: { L:{h:"L",sub:"workers"}, Q:{h:"Q",sub:"T-shirts/hour"},
+        MP:{h:"MP<sub>L</sub>",noFirst:true}, AP:{h:"AP<sub>L</sub>",noFirst:true},
+        FC:{h:"FC"}, VC:{h:"VC"}, TC:{h:"TC"} },
+  t2: { Q:{h:"Q",sub:"dozens/hour"}, TC:{h:"TC"}, FC:{h:"FC"}, VC:{h:"VC"},
+        AFC:{h:"AFC",noFirst:true}, AVC:{h:"AVC",noFirst:true}, ATC:{h:"ATC",noFirst:true}, MC:{h:"MC",noFirst:true} }
 };
-Object.values(TABLES).forEach(t=>{ t.calc = t.cols.map(c=>c.k).filter(k=>!t.inputs.includes(k)); });
+const INPUTS = { t1:["L","Q"], t2:["Q","TC"] };
+const CALC = { t1:["MP","AP","FC","VC","TC"], t2:["FC","VC","AFC","AVC","ATC","MC"] };
+// Which columns each part's table shows. "edit" = the given columns (L, Q / Q, TC) can be typed here.
+const VIEWS = {
+  p1:{tk:"t1", keys:["L","Q"], edit:true},
+  p2:{tk:"t1", keys:["L","Q","MP","AP"]},
+  p3:{tk:"t1", keys:["L","Q","FC","VC","TC"]},
+  p4:{tk:"t2", keys:["Q","TC","FC","VC","AFC","AVC","ATC","MC"], edit:true}
+};
 const KEY = "prodCostExplorer.v2";
 
 function freshState(){
@@ -239,7 +508,7 @@ function freshState(){
     t1:{fc:60, wage:30, rows:[0,20,50,72,88,100,108].map((q,i)=>({L:String(i),Q:String(q)}))},
     t2:{fc:60, rows:[60,74,84,93,108,130,162,210,280].map((tc,i)=>({Q:String(i),TC:String(tc)}))} };
 }
-// Saved work from an older table size (e.g. the 7-row cost table before 2026-11-10) is dropped so the new rows show.
+// Saved work from an older table size is dropped so the current rows show.
 function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)), f=freshState();
   return s&&s.t1&&s.t2&&s.t1.rows.length===f.t1.rows.length&&s.t2.rows.length===f.t2.rows.length ? s : null; }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
@@ -249,6 +518,7 @@ const num = v => { if(v===undefined||v===null) return NaN; const s=String(v).tri
 const fin = Number.isFinite;
 function fmt(x){ if(!fin(x)) return ""; const r=Math.round(x*10)/10; return Number.isInteger(r)?String(r):r.toFixed(1); }
 const fmtc = x => fmt(x).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const fmt2 = x => { if(!fin(x)) return ""; const r=Math.round(x*100)/100; return String(r); };
 
 // correct values
 function compute(tk){
@@ -275,10 +545,10 @@ function compute(tk){
 }
 // what the graphs use: typed values (hand mode) or computed (auto mode)
 function values(tk){
-  const c=compute(tk), T=TABLES[tk];
+  const c=compute(tk);
   return state[tk].rows.map((r,i)=>{
-    const v={}; T.inputs.forEach(k=>v[k]=num(r[k]));
-    T.calc.forEach(k=>{ v[k] = state.mode==="auto" ? c[i][k] : num(r[k]); });
+    const v={}; INPUTS[tk].forEach(k=>v[k]=num(r[k]));
+    CALC[tk].forEach(k=>{ v[k] = state.mode==="auto" ? c[i][k] : num(r[k]); });
     return v;
   });
 }
@@ -286,20 +556,23 @@ function values(tk){
 // ---------------------------------------------------------------- tables
 let selRow=null, hoverRow=null;              // row ids like "t1:3"
 const hl = () => hoverRow!==null ? hoverRow : selRow;
-const card = tk => document.querySelector(`[data-table="${tk}"]`);
-const tbodyOf = tk => card(tk).querySelector("tbody");
+const viewHost = v => document.querySelector(`[data-view="${v}"]`);
 
-function buildTable(tk){
-  const T=TABLES[tk], c=card(tk);
-  c.querySelector("thead").innerHTML="<tr>"+T.cols.map(x=>`<th class="${x.sep?"sep":""}">${x.h}${x.sub?`<small>${x.sub}</small>`:""}</th>`).join("")+"</tr>";
-  const tb=tbodyOf(tk); tb.innerHTML="";
+function buildView(v){
+  const V=VIEWS[v], tk=V.tk, host=viewHost(v);
+  const firstCalc = V.keys.find(k=>CALC[tk].includes(k));
+  let html="<table><thead><tr>"+V.keys.map(k=>{ const c=COLS[tk][k];
+    return `<th class="${k===firstCalc?"sep":""}">${c.h}${c.sub?`<small>${c.sub}</small>`:""}</th>`; }).join("")+"</tr></thead><tbody></tbody></table>";
+  host.innerHTML=html;
+  const tb=host.querySelector("tbody");
   state[tk].rows.forEach((r,i)=>{
     const tr=document.createElement("tr"); tr.dataset.id=tk+":"+i;
-    T.cols.forEach(col=>{
-      const td=document.createElement("td"); if(col.sep) td.className="sep";
+    V.keys.forEach(k=>{
+      const col=COLS[tk][k], td=document.createElement("td"); if(k===firstCalc) td.className="sep";
       const inp=document.createElement("input");
-      inp.className="cell"; inp.dataset.k=col.k; inp.dataset.i=i; inp.dataset.t=tk;
-      inp.inputMode="decimal"; inp.autocomplete="off"; inp.setAttribute("aria-label", col.h+" row "+(i+1));
+      inp.className="cell"; inp.dataset.k=k; inp.dataset.i=i; inp.dataset.t=tk;
+      inp.inputMode="decimal"; inp.autocomplete="off"; inp.setAttribute("aria-label", k+" row "+(i+1));
+      if(INPUTS[tk].includes(k)){ inp.classList.add("given"); if(!V.edit){ inp.readOnly=true; inp.tabIndex=-1; } }
       if(col.noFirst && i===0){ inp.disabled=true; inp.value="–"; }
       td.appendChild(inp); tr.appendChild(td);
     });
@@ -308,53 +581,77 @@ function buildTable(tk){
     tr.addEventListener("click",e=>{ if(e.target.tagName!=="INPUT"||e.target.readOnly){ selRow = selRow===tr.dataset.id?null:tr.dataset.id; renderAll(); } });
     tb.appendChild(tr);
   });
-  syncTable(tk);
 }
-function syncTable(tk){
-  const c=compute(tk), T=TABLES[tk];
-  tbodyOf(tk).querySelectorAll("input.cell").forEach(inp=>{
+function syncTk(tk){
+  const c=compute(tk);
+  document.querySelectorAll(`input.cell[data-t="${tk}"]`).forEach(inp=>{
     if(inp.disabled) return;
-    const i=+inp.dataset.i, k=inp.dataset.k, auto=state.mode==="auto" && T.calc.includes(k);
-    inp.readOnly=auto;
+    const i=+inp.dataset.i, k=inp.dataset.k, isCalc=CALC[tk].includes(k), auto=state.mode==="auto" && isCalc;
+    if(isCalc) inp.readOnly=auto;
     const want = auto ? fmt(c[i][k]) : (state[tk].rows[i][k] ?? "");
     if(document.activeElement!==inp && inp.value!==want) inp.value=want;
     if(auto) inp.classList.remove("ok","bad");
   });
-  card(tk).querySelectorAll("[data-param]").forEach(p=>{ if(document.activeElement!==p) p.value=state[tk][p.dataset.param]; });
+  document.querySelectorAll(`[data-param][data-t="${tk}"]`).forEach(p=>{ if(document.activeElement!==p) p.value=state[tk][p.dataset.param]; });
 }
-const syncAll = () => { syncTable("t1"); syncTable("t2"); };
+function buildTk(tk){ Object.keys(VIEWS).forEach(v=>{ if(VIEWS[v].tk===tk) buildView(v); }); syncTk(tk); }
+const syncAll = () => { syncTk("t1"); syncTk("t2"); };
 
-["t1","t2"].forEach(tk=>{
-  const tb=tbodyOf(tk);
-  tb.addEventListener("input",e=>{
-    const inp=e.target; if(!inp.classList.contains("cell")) return;
-    state[tk].rows[+inp.dataset.i][inp.dataset.k]=inp.value;
-    inp.classList.remove("ok","bad"); save(); syncTable(tk); renderAll();
-  });
-  tb.addEventListener("focusin",e=>{ if(e.target.dataset && e.target.dataset.i!==undefined){ selRow=tk+":"+e.target.dataset.i; renderAll(); } });
-  tb.addEventListener("keydown",e=>{
-    const inp=e.target; if(!inp.classList.contains("cell")) return;
-    const cols=TABLES[tk].cols, i=+inp.dataset.i, j=cols.findIndex(c=>c.k===inp.dataset.k);
-    let ni=i, nj=j;
-    if(e.key==="ArrowDown"||e.key==="Enter") ni=i+1; else if(e.key==="ArrowUp") ni=i-1;
-    else if(e.key==="ArrowRight" && inp.selectionStart===inp.value.length) nj=j+1;
-    else if(e.key==="ArrowLeft" && inp.selectionStart===0) nj=j-1; else return;
-    const t=tb.querySelector(`input[data-i="${ni}"][data-k="${(cols[nj]||{}).k}"]`);
-    if(t && !t.disabled){ e.preventDefault(); t.focus(); t.select(); }
-  });
-  card(tk).querySelectorAll("[data-param]").forEach(p=>p.addEventListener("input",()=>{
-    state[tk][p.dataset.param]=p.value; save(); syncTable(tk); renderAll();
-  }));
-  card(tk).querySelector("[data-add]").onclick=()=>{
-    const rows=state[tk].rows, first=TABLES[tk].cols[0].k, last=num(rows[rows.length-1][first]);
-    const r={}; r[first]=fin(last)?String(last+1):""; rows.push(r); save(); buildTable(tk); renderAll();
-  };
-  card(tk).querySelector("[data-del]").onclick=()=>{
-    if(state[tk].rows.length>2){ state[tk].rows.pop(); selRow=null; save(); buildTable(tk); renderAll(); }
-  };
+document.addEventListener("input",e=>{
+  const inp=e.target;
+  if(inp.classList && inp.classList.contains("cell")){
+    const tk=inp.dataset.t; state[tk].rows[+inp.dataset.i][inp.dataset.k]=inp.value;
+    inp.classList.remove("ok","bad"); save(); syncTk(tk); renderAll(); return;
+  }
+  if(inp.dataset && inp.dataset.param){ const tk=inp.dataset.t; state[tk][inp.dataset.param]=inp.value; save(); syncTk(tk); renderAll(); }
+});
+document.addEventListener("focusin",e=>{ const d=e.target.dataset; if(d && d.i!==undefined && d.t){ selRow=d.t+":"+d.i; renderAll(); } });
+document.addEventListener("keydown",e=>{
+  const inp=e.target; if(!inp.classList || !inp.classList.contains("cell")) return;
+  const row=inp.closest("tr"), tb=inp.closest("tbody");
+  const cells=[...row.querySelectorAll("input.cell")], j=cells.indexOf(inp), i=[...tb.children].indexOf(row);
+  let ni=i, nj=j;
+  if(e.key==="ArrowDown"||e.key==="Enter") ni=i+1; else if(e.key==="ArrowUp") ni=i-1;
+  else if(e.key==="ArrowRight" && inp.selectionStart===inp.value.length) nj=j+1;
+  else if(e.key==="ArrowLeft" && inp.selectionStart===0) nj=j-1; else return;
+  const tr=tb.children[ni]; if(!tr) return;
+  const t=tr.querySelectorAll("input.cell")[nj];
+  if(t && !t.disabled && !(t.readOnly && t.classList.contains("given"))){ e.preventDefault(); t.focus(); t.select(); }
+});
+document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
+  const tk=b.dataset.add, rows=state[tk].rows, first=INPUTS[tk][0], last=num(rows[rows.length-1][first]);
+  const r={}; r[first]=fin(last)?String(last+1):""; rows.push(r); save(); buildTk(tk); renderAll();
+});
+document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+  const tk=b.dataset.del; if(state[tk].rows.length>2){ state[tk].rows.pop(); selRow=null; save(); buildTk(tk); renderAll(); }
 });
 
-const statusEl=document.getElementById("status");
+// per-part buttons: check / show answers / clear (only the columns of that part's table)
+const PART_VIEW = {"2":"p2","3":"p3","4":"p4"};
+document.querySelectorAll("[data-part-btns]").forEach(box=>{
+  const part=box.closest(".part"), v=PART_VIEW[part.dataset.part], V=VIEWS[v], tk=V.tk;
+  const keys=V.keys.filter(k=>CALC[tk].includes(k)), status=part.querySelector(".status");
+  const mk=(txt,cls,fn)=>{ const b=document.createElement("button"); b.textContent=txt; if(cls) b.className=cls; b.onclick=fn; box.prepend(b); return b; };
+  // prepend in reverse order
+  mk("Clear","",()=>{ state[tk].rows.forEach(r=>keys.forEach(k=>{ r[k]=""; })); marks(viewHost(v),true); save(); syncTk(tk); renderAll(); status.textContent=""; });
+  mk("Show answers","",()=>{ const c=compute(tk); state[tk].rows.forEach((r,i)=>keys.forEach(k=>{ r[k]=fmt(c[i][k]); }));
+    if(state.mode==="auto") setMode("hand"); marks(viewHost(v),true); save(); syncTk(tk); renderAll(); status.textContent="Answers filled in."; });
+  mk("Check my answers","primary",()=>{
+    if(state.mode==="auto"){ status.textContent="Switch to “Fill by hand” (top right) to check your answers."; return; }
+    const c=compute(tk); let right=0, wrong=0, empty=0;
+    viewHost(v).querySelectorAll("input.cell").forEach(inp=>{
+      const k=inp.dataset.k; if(inp.disabled||!keys.includes(k)) return;
+      const want=c[+inp.dataset.i][k], got=num(inp.value);
+      inp.classList.remove("ok","bad");
+      if(!fin(want)) return;
+      if(!fin(got)){ empty++; return; }
+      if(Math.abs(got-want)<=Math.max(0.06,Math.abs(want)*0.006)){ inp.classList.add("ok"); right++; } else { inp.classList.add("bad"); wrong++; }
+    });
+    status.textContent=`${right} right, ${wrong} to fix, ${empty} still empty. (Rounding to one decimal is fine.)`;
+  });
+});
+function marks(root){ root.querySelectorAll("input.cell").forEach(i=>i.classList.remove("ok","bad")); }
+
 function setMode(m){
   state.mode=m; save();
   document.getElementById("modeHand").setAttribute("aria-pressed", m==="hand");
@@ -363,40 +660,13 @@ function setMode(m){
 }
 document.getElementById("modeHand").onclick=()=>setMode("hand");
 document.getElementById("modeAuto").onclick=()=>setMode("auto");
-const clearMarks=()=>document.querySelectorAll("input.cell").forEach(i=>i.classList.remove("ok","bad"));
-
-document.getElementById("btnCheck").onclick=()=>{
-  if(state.mode==="auto"){ statusEl.textContent="Switch to “Fill by hand” to check answers."; return; }
-  let right=0, wrong=0, empty=0;
-  ["t1","t2"].forEach(tk=>{
-    const c=compute(tk), calc=TABLES[tk].calc;
-    tbodyOf(tk).querySelectorAll("input.cell").forEach(inp=>{
-      const k=inp.dataset.k; if(inp.disabled||!calc.includes(k)) return;
-      const want=c[+inp.dataset.i][k], got=num(inp.value);
-      inp.classList.remove("ok","bad");
-      if(!fin(want)) return;
-      if(!fin(got)){ empty++; return; }
-      if(Math.abs(got-want)<=Math.max(0.06,Math.abs(want)*0.006)){ inp.classList.add("ok"); right++; } else { inp.classList.add("bad"); wrong++; }
-    });
-  });
-  statusEl.textContent=`${right} right, ${wrong} to fix, ${empty} still empty. (Rounding to one decimal is fine.)`;
-};
-document.getElementById("btnFill").onclick=()=>{
-  ["t1","t2"].forEach(tk=>{ const c=compute(tk); state[tk].rows.forEach((r,i)=>TABLES[tk].calc.forEach(k=>{ r[k]=fmt(c[i][k]); })); });
-  if(state.mode==="auto") setMode("hand");
-  save(); syncAll(); renderAll(); statusEl.textContent="All answers filled in.";
-};
-document.getElementById("btnClearCalc").onclick=()=>{
-  ["t1","t2"].forEach(tk=>state[tk].rows.forEach(r=>TABLES[tk].calc.forEach(k=>{ r[k]=""; })));
-  clearMarks(); save(); syncAll(); renderAll(); statusEl.textContent="";
-};
-document.getElementById("btnClearIn").onclick=()=>{
-  ["t1","t2"].forEach(tk=>{ const keep=TABLES[tk].cols[0].k; state[tk].rows.forEach(r=>Object.keys(r).forEach(k=>{ if(k!==keep) r[k]=""; })); });
-  clearMarks(); save(); syncAll(); renderAll(); statusEl.textContent="";
-};
 document.getElementById("btnDefault").onclick=()=>{
   const m=state.mode; state=freshState(); state.mode=m; save(); selRow=null;
-  buildTable("t1"); buildTable("t2"); renderAll(); statusEl.textContent="Example numbers loaded.";
+  buildTk("t1"); buildTk("t2"); document.querySelectorAll(".status").forEach(s=>s.textContent=""); renderAll();
+};
+document.getElementById("btnClearAll").onclick=()=>{
+  ["t1","t2"].forEach(tk=>{ const keep=INPUTS[tk][0]; state[tk].rows.forEach(r=>Object.keys(r).forEach(k=>{ if(k!==keep) r[k]=""; })); });
+  marks(document); save(); syncAll(); document.querySelectorAll(".status").forEach(s=>s.textContent=""); renderAll();
 };
 
 // ---------------------------------------------------------------- theme
@@ -428,9 +698,9 @@ function hideTip(){ tipEl.style.display="none"; }
 
 let clipId=0;
 function plot(svg, legendEl, o){
-  // o: {xmax, ymax, xlab, ylab, series:[{name,color,dash,pts:[{x,y,row,tip}]}], vlines}
+  // o: {xmax, ymax, xlab, ylab, series:[{name,color,dash,op,label,pts:[{x,y,row,tip}]}], vlines, draw(X,Y,g)}
   svg.innerHTML="";
-  const W=440,H=300,m={l:52,r:44,t:12,b:40}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, m={l:52,r:56,t:14,b:40}, pw=W-m.l-m.r, ph=H-m.t-m.b;
   const X=x=>m.l+x/o.xmax*pw, Y=y=>m.t+ph-y/o.ymax*ph;
   const xs=niceStep(o.xmax,6), ys=niceStep(o.ymax,5);
   const g=el("g",{},svg);
@@ -452,109 +722,203 @@ function plot(svg, legendEl, o){
   const plotG=el("g",{"clip-path":`url(#${id})`},svg), topG=el("g",{},svg);
   (o.vlines||[]).forEach(v=>{ if(fin(v.x)&&v.x<=o.xmax){
     el("line",{x1:X(v.x),x2:X(v.x),y1:m.t,y2:m.t+ph,stroke:cssv("--muted"),"stroke-dasharray":"3 4","stroke-width":1},plotG);
-    el("text",{x:X(v.x)+4,y:m.t+12},topG).textContent=v.label; }});
+    el("text",{x:X(v.x),y:m.t+ph+31,"text-anchor":"middle",class:"lbl"},topG).textContent=v.label; }});
+  if(o.draw) o.draw(X,Y,plotG,topG);
 
   legendEl.innerHTML="";
   const H_ROW=hl(); let any=false; const labelYs=[];
   o.series.forEach(s=>{
-    const col=cssv(s.color);
-    const lg=document.createElement("span");
-    lg.innerHTML=`<svg width="22" height="8" style="width:22px;display:inline"><line x1="0" y1="4" x2="22" y2="4" stroke="${col}" stroke-width="2.5" stroke-dasharray="${s.dash||""}"/></svg>${s.name}`;
-    legendEl.appendChild(lg);
+    const col=cssv(s.color), op=s.op??1;
+    if(!s.noLegend){
+      const lg=document.createElement("span");
+      lg.innerHTML=`<svg width="22" height="8" style="width:22px;display:inline"><line x1="0" y1="4" x2="22" y2="4" stroke="${col}" stroke-width="2.5" stroke-dasharray="${s.dash||""}" opacity="${op}"/></svg>${s.name}`;
+      legendEl.appendChild(lg);
+    }
     const pts=s.pts.filter(p=>fin(p.x)&&fin(p.y));
     if(!pts.length) return; any=true;
-    if(pts.length>1) el("polyline",{points:pts.map(p=>X(p.x)+","+Y(p.y)).join(" "),fill:"none",stroke:col,"stroke-width":2.5,"stroke-dasharray":s.dash||"","stroke-linejoin":"round"},plotG);
-    pts.forEach(p=>{
+    if(pts.length>1) el("polyline",{points:pts.map(p=>X(p.x)+","+Y(p.y)).join(" "),fill:"none",stroke:col,"stroke-width":2.5,"stroke-dasharray":s.dash||"","stroke-linejoin":"round",opacity:op},plotG);
+    if(!s.noPts) pts.forEach(p=>{
       if(p.y>o.ymax*1.001) return;
       const on=p.row===H_ROW;
-      el("circle",{cx:X(p.x),cy:Y(p.y),r:on?6.5:4,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2},plotG);
+      el("circle",{cx:X(p.x),cy:Y(p.y),r:on?6.5:4,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2,opacity:op},plotG);
       const hit=el("circle",{cx:X(p.x),cy:Y(p.y),r:11,fill:"transparent",style:"cursor:pointer"},topG);
       hit.addEventListener("mousemove",e=>showTip(e,p.tip||`${s.name}: ${fmt(p.y)}`));
       hit.addEventListener("mouseleave",hideTip);
       hit.addEventListener("click",()=>{ selRow = selRow===p.row?null:p.row; renderAll(); });
     });
     const vis=pts.filter(p=>p.y<=o.ymax && p.x<=o.xmax), last=vis[vis.length-1];
-    if(last){
-      let ly=Y(last.y)+4; while(labelYs.some(v=>Math.abs(v-ly)<13)) ly+=13; labelYs.push(ly);
-      el("text",{x:Math.min(X(last.x)+7,W-2),y:ly,class:"lbl","text-anchor":X(last.x)+7>W-30?"end":"start"},topG).textContent=s.name;
+    if(last && !s.noLabel){
+      const y0=Y(last.y)+4; let ly=y0;
+      for(let k=1; labelYs.some(v=>Math.abs(v-ly)<13) && k<20; k++) ly = y0 + (k%2?-1:1)*Math.ceil(k/2)*13;
+      labelYs.push(ly);
+      el("text",{x:X(last.x)+7,y:ly,class:"lbl","text-anchor":"start",opacity:op},topG).textContent=s.label||s.name;
     }
   });
-  if(!any) el("text",{x:m.l+pw/2,y:m.t+ph/2,"text-anchor":"middle"},svg).textContent="Fill in the table to draw this graph";
+  if(!any) el("text",{x:m.l+pw/2,y:m.t+ph/2,"text-anchor":"middle"},svg).textContent=o.empty||"Fill in the table to draw this graph";
 }
+const maxOf=arr=>Math.max(0,...arr.filter(fin));
+const midOn=()=>document.getElementById("midpts").checked;
+
+// ---- curve toggles (part 4) and what-if (part 5)
+let curvesOn={AFC:true,AVC:true,ATC:true,MC:true};
+let buildIdx=-1;
+function applyCurves(){ document.querySelectorAll("[data-curve]").forEach(b=>b.setAttribute("aria-pressed", !!curvesOn[b.dataset.curve])); }
+document.querySelectorAll("[data-curve]").forEach(b=>b.onclick=()=>{ curvesOn[b.dataset.curve]=!curvesOn[b.dataset.curve]; applyCurves(); renderAll(); });
+const BUILD=["AFC","AVC","ATC","MC"];
+const buildBtn=document.getElementById("buildStep");
+buildBtn.onclick=()=>{
+  buildIdx = buildIdx>=BUILD.length-1 ? 0 : buildIdx+1;
+  BUILD.forEach((k,i)=>curvesOn[k]=i<=buildIdx);
+  buildBtn.textContent = buildIdx>=BUILD.length-1 ? "Start over, one at a time" : "Add the next curve";
+  applyCurves(); renderAll();
+};
+// ---- part 6 sliders (not saved: every visit starts from the cost table)
+const sFC=document.getElementById("sFC"), sVC=document.getElementById("sVC"), sW=document.getElementById("sW");
+let sFCtouched=false;
+function preset(p){
+  const fc0=num(state.t2.fc)||0;
+  sFC.value = fc0 + (p==="rent"?30:0); sVC.value = p==="thread"?2:0; sW.value = p==="wage"?20:0;
+  sFCtouched = p==="rent"; renderAll();
+}
+document.querySelectorAll("[data-preset]").forEach(b=>b.onclick=()=>preset(b.dataset.preset));
+sFC.addEventListener("input",()=>{ sFCtouched=true; renderAll(); });
+[sVC,sW].forEach(s=>s.addEventListener("input",()=>renderAll()));
+
+// ---- helpers for the narrative boxes
+function argminRows(b,key){ // indices (i>=1) with the smallest value of key
+  let best=Infinity; b.forEach((r,i)=>{ if(i&&fin(r[key])&&fin(r.Q)&&r[key]<best) best=r[key]; });
+  if(!fin(best)) return [];
+  return b.map((r,i)=>i&&fin(r[key])&&Math.abs(r[key]-best)<1e-9?i:-1).filter(i=>i>=0);
+}
+const listQ=(b,idx)=>idx.map(i=>fmt(b[i].Q)).join(" and ");
 
 function renderGraphs(){
   document.querySelectorAll("tr[data-id]").forEach(tr=>tr.classList.toggle("hl", tr.dataset.id===hl()));
-  const mid=document.getElementById("midpts").checked;
-  const maxOf=arr=>Math.max(0,...arr.filter(fin));
-  // ---- Table 1: graphs 1-3
-  const a=values("t1"), id1=i=>"t1:"+i;
+  const mid=midOn(), cur=String(part);
+  // ---------------- Table 1
+  const a=values("t1"), c1=compute("t1"), id1=i=>"t1:"+i;
   const Lmax=niceMax(Math.max(maxOf(a.map(r=>r.L)),1)*1.05,6), Qmax=niceMax(Math.max(maxOf(a.map(r=>r.Q)),1)*1.08,5);
-  const mpx=i=> mid&&i>0&&fin(a[i-1].L) ? (a[i].L+a[i-1].L)/2 : a[i].L;
-  plot(document.getElementById("g1"),document.getElementById("lg1"),{
-    xmax:Lmax, ymax:Qmax, xlab:"L (workers)", ylab:"Q (T-shirts per hour)",
-    series:[{name:"Q",color:"--prod",pts:a.map((r,i)=>({x:r.L,y:r.Q,row:id1(i),tip:`L = ${fmt(r.L)}, Q = ${fmt(r.Q)}`}))}]
-  });
-  const ppMax=niceMax(Math.max(maxOf(a.slice(1).map(r=>r.MP)),maxOf(a.slice(1).map(r=>r.AP)),1)*1.1,5);
-  plot(document.getElementById("g2"),document.getElementById("lg2"),{
-    xmax:Lmax, ymax:ppMax, xlab:"L (workers)", ylab:"T-shirts per worker",
-    series:[
+  const prodSeries={name:"Q = f(L)",color:"--prod",noLegend:true,pts:a.map((r,i)=>({x:r.L,y:r.Q,row:id1(i),tip:`L = ${fmt(r.L)}, Q = ${fmt(r.Q)}`}))};
+  if(cur==="1") plot(g("g1"),g("lg1"),{xmax:Lmax,ymax:Qmax,xlab:"L (workers)",ylab:"Q (T-shirts per hour)",series:[prodSeries]});
+  if(cur==="2"){
+    const H=hl(); let hi=-1; if(H&&H.startsWith("t1:")) hi=+H.slice(3);
+    plot(g("g2a"),g("lg2a"),{xmax:Lmax,ymax:Qmax,xlab:"L (workers)",ylab:"Q (T-shirts per hour)",series:[prodSeries],
+      draw:(X,Y,pg,tg)=>{ if(hi>0 && fin(a[hi].L)&&fin(a[hi].Q)&&fin(a[hi-1].L)&&fin(a[hi-1].Q)){
+        const p0=a[hi-1], p1=a[hi], col=cssv("--mc");
+        el("line",{x1:X(p0.L),y1:Y(p0.Q),x2:X(p1.L),y2:Y(p1.Q),stroke:col,"stroke-width":6,opacity:.45,"stroke-linecap":"round"},pg);
+        el("line",{x1:X(p0.L),y1:Y(p0.Q),x2:X(p1.L),y2:Y(p0.Q),stroke:col,"stroke-dasharray":"3 3"},pg);
+        el("line",{x1:X(p1.L),y1:Y(p0.Q),x2:X(p1.L),y2:Y(p1.Q),stroke:col,"stroke-dasharray":"3 3"},pg);
+        const mp=(p1.Q-p0.Q)/(p1.L-p0.L);
+        el("text",{x:X(p1.L)+6,y:(Y(p0.Q)+Y(p1.Q))/2+4,class:"lbl"},tg).textContent=`MP = ${fmt(p1.Q-p0.Q)}/${fmt(p1.L-p0.L)} = ${fmt(mp)}`;
+      }}});
+    const ppMax=niceMax(Math.max(maxOf(a.slice(1).map(r=>r.MP)),maxOf(a.slice(1).map(r=>r.AP)),maxOf(c1.slice(1).map(r=>r.MP)),1)*1.1,5);
+    const mpx=i=> mid&&i>0&&fin(a[i-1].L) ? (a[i].L+a[i-1].L)/2 : a[i].L;
+    plot(g("g2b"),g("lg2b"),{xmax:Lmax,ymax:ppMax,xlab:"L (workers)",ylab:"T-shirts per worker",empty:"Fill in MP and AP to draw this graph",series:[
       {name:"MP",color:"--mc",pts:a.map((r,i)=>i?({x:mpx(i),y:r.MP,row:id1(i),tip:`MP from L = ${fmt(a[i-1].L)} to ${fmt(r.L)}: ${fmt(r.MP)}`}):{})},
       {name:"AP",color:"--avc",dash:"7 4",pts:a.map((r,i)=>i?({x:r.L,y:r.AP,row:id1(i),tip:`AP at L = ${fmt(r.L)}: ${fmt(r.AP)}`}):{})}
-    ]
-  });
-  const tcMax=niceMax(Math.max(maxOf(a.map(r=>r.TC)),maxOf(a.map(r=>r.VC)),maxOf(a.map(r=>r.FC)),1)*1.08,5);
-  plot(document.getElementById("g3"),document.getElementById("lg3"),{
-    xmax:Qmax, ymax:tcMax, xlab:"Q (T-shirts per hour)", ylab:"'000 VND per hour",
-    series:[
+    ]});
+    // narrative: only once the student has filled in MP
+    const mps=a.map((r,i)=>i?r.MP:NaN), filled=a.slice(1).every(r=>fin(r.MP));
+    const box=g("ins2");
+    if(!filled){ box.innerHTML="<h3>What do the numbers say?</h3><p>Fill in the MP and AP columns (or switch to Auto-calculate) to see.</p>"; }
+    else {
+      let k=1; mps.forEach((v,i)=>{ if(i&&v>mps[k]) k=i; });
+      const falls = mps.slice(k+1).every((v,j)=>v<mps[k+j]);
+      box.innerHTML=`<h3>What do the numbers say?</h3><p>Worker ${fmt(a[k].L)} adds the most: <b>${fmt(mps[k])}</b> T-shirts per hour.`+
+        (falls&&k<mps.length-1?` After that, each new worker adds fewer, down to <b>${fmt(mps[mps.length-1])}</b> for worker ${fmt(a[a.length-1].L)}.`:"")+
+        `</p><p>While MP is above AP, AP rises. Once MP falls below AP, AP falls (just like your GPA in Part 5).</p>`;
+    }
+  }
+  if(cur==="3"){
+    const tcMax=niceMax(Math.max(maxOf(a.map(r=>r.TC)),maxOf(a.map(r=>r.VC)),maxOf(a.map(r=>r.FC)),1)*1.08,5);
+    plot(g("g3"),g("lg3"),{xmax:Qmax,ymax:tcMax,xlab:"Q (T-shirts per hour)",ylab:"'000 VND per hour",empty:"Fill in FC, VC and TC to draw this graph",series:[
       {name:"TC",color:"--atc",pts:a.map((r,i)=>({x:r.Q,y:r.TC,row:id1(i),tip:`Q = ${fmt(r.Q)}: TC = ${fmtc(r.TC)}`}))},
       {name:"VC",color:"--avc",dash:"7 4",pts:a.map((r,i)=>({x:r.Q,y:r.VC,row:id1(i),tip:`Q = ${fmt(r.Q)}: VC = ${fmtc(r.VC)}`}))},
       {name:"FC",color:"--afc",dash:"2 4",pts:a.map((r,i)=>({x:r.Q,y:r.FC,row:id1(i),tip:`Q = ${fmt(r.Q)}: FC = ${fmtc(r.FC)}`}))}
-    ]
-  });
-  // ---- Table 2: graph 4
-  const b=values("t2"), id2=i=>"t2:"+i;
-  const Q2max=niceMax(Math.max(maxOf(b.map(r=>r.Q)),1)*1.08,6);
-  const mcx=i=> mid&&i>0&&fin(b[i-1].Q) ? (b[i].Q+b[i-1].Q)/2 : b[i].Q;
-  let um=num(document.getElementById("ymaxUnit").value);
-  if(!(um>0)) um=niceMax(Math.max(maxOf(b.map(r=>r.ATC)),1),5);
-  let best=null; b.forEach((r,i)=>{ if(i&&fin(r.ATC)&&fin(r.Q)&&(best===null||r.ATC<b[best].ATC)) best=i; });
-  plot(document.getElementById("g4"),document.getElementById("lg4"),{
-    xmax:Q2max, ymax:um, xlab:"Q (dozens per hour)", ylab:"'000 VND per dozen",
-    vlines: best!==null?[{x:b[best].Q,label:`Min ATC at Q = ${fmt(b[best].Q)}`}]:[],
-    series:[
-      {name:"MC",color:"--mc",pts:b.map((r,i)=>i?({x:mcx(i),y:r.MC,row:id2(i),tip:`MC from Q = ${fmt(b[i-1].Q)} to ${fmt(r.Q)}: ${fmt(r.MC)}`}):{})},
-      {name:"ATC",color:"--atc",pts:b.map((r,i)=>i?({x:r.Q,y:r.ATC,row:id2(i),tip:`ATC at Q = ${fmt(r.Q)}: ${fmt(r.ATC)}`}):{})},
-      {name:"AVC",color:"--avc",dash:"7 4",pts:b.map((r,i)=>i?({x:r.Q,y:r.AVC,row:id2(i),tip:`AVC at Q = ${fmt(r.Q)}: ${fmt(r.AVC)}`}):{})},
-      {name:"AFC",color:"--afc",dash:"2 4",pts:b.map((r,i)=>i?({x:r.Q,y:r.AFC,row:id2(i),tip:`AFC at Q = ${fmt(r.Q)}: ${fmt(r.AFC)}`}):{})}
-    ]
-  });
+    ]});
+    const w=num(state.t1.wage), n=c1.length-1, box=g("ins3");
+    if(n>=2 && fin(w) && fin(c1[1].MP) && fin(c1[n].MP) && c1[1].MP>0 && c1[n].MP>0){
+      box.innerHTML=`<h3>Same wage, different cost per T-shirt</h3><p>Every worker costs <b>${fmtc(w)}</b> per hour. Worker ${fmt(a[1].L)} sews ${fmt(c1[1].MP)} T-shirts, so each of those T-shirts costs ${fmt2(w/c1[1].MP)}. Worker ${fmt(a[n].L)} sews only ${fmt(c1[n].MP)}, so each costs <b>${fmt2(w/c1[n].MP)}</b>.</p><p>Extra cost per extra T-shirt = w / MP. As MP falls, it rises: that is marginal cost, and it is why TC bends upward.</p>`;
+    } else box.innerHTML="<h3>Same wage, different cost per T-shirt</h3><p>Fill in L, Q and the wage to see this.</p>";
+  }
+  // ---------------- Table 2
+  if(cur==="4"||cur==="5"||cur==="6"){
+    const b=values("t2"), c2=compute("t2"), id2=i=>"t2:"+i;
+    const Q2max=niceMax(Math.max(maxOf(b.map(r=>r.Q)),1)*1.08,6);
+    const mcx=i=> mid&&i>0&&fin(b[i-1].Q) ? (b[i].Q+b[i-1].Q)/2 : b[i].Q;
+    // y-axis from the correct values so it does not jump while students type
+    const um=niceMax(Math.max(...c2.slice(1).map(r=>Math.max(r.ATC||0,r.MC||0,r.AVC||0)),1),5);
+    const S={
+      MC:(arr,extra={})=>Object.assign({name:"MC",color:"--mc",pts:arr.map((r,i)=>i?({x:mcx(i),y:r.MC,row:id2(i),tip:`MC from Q = ${fmt(b[i-1].Q)} to ${fmt(r.Q)}: ${fmt(r.MC)}`}):{})},extra),
+      ATC:(arr,extra={})=>Object.assign({name:"ATC",color:"--atc",pts:arr.map((r,i)=>i?({x:r.Q,y:r.ATC,row:id2(i),tip:`ATC at Q = ${fmt(r.Q)}: ${fmt(r.ATC)}`}):{})},extra),
+      AVC:(arr,extra={})=>Object.assign({name:"AVC",color:"--avc",dash:"7 4",pts:arr.map((r,i)=>i?({x:r.Q,y:r.AVC,row:id2(i),tip:`AVC at Q = ${fmt(r.Q)}: ${fmt(r.AVC)}`}):{})},extra),
+      AFC:(arr,extra={})=>Object.assign({name:"AFC",color:"--afc",dash:"2 4",pts:arr.map((r,i)=>i?({x:r.Q,y:r.AFC,row:id2(i),tip:`AFC at Q = ${fmt(r.Q)}: ${fmt(r.AFC)}`}):{})},extra)
+    };
+    const minATC=argminRows(b,"ATC"), minAVC=argminRows(b,"AVC");
+    if(cur==="4"){
+      const series=["MC","ATC","AVC","AFC"].filter(k=>curvesOn[k]).map(k=>S[k](b));
+      plot(g("g4"),g("lg4"),{xmax:Q2max,ymax:um,xlab:"Q (dozens per hour)",ylab:"'000 VND per dozen",
+        empty: series.length?"Fill in the cost table to draw this graph":"Click a curve below to show it", series});
+      g("txtAVC").innerHTML = minAVC.length ? `Falls, then <b>rises</b> after ${listQ(b,minAVC)} dozen: diminishing marginal product.` : "Falls, then <b>rises</b>: diminishing marginal product.";
+    } else if(cur==="6"){
+      // before = the correct cost table (from Q and TC), so the sliders work even before students fill it in
+      const fc0=num(state.t2.fc);
+      if(!sFCtouched) sFC.value=fin(fc0)?fc0:60;
+      const FCn=+sFC.value, d=+sVC.value, sc=1+(+sW.value)/100;
+      g("oFC").textContent=fmt(FCn); g("oVC").textContent=(d>0?"+":"")+fmt(d); g("oW").textContent=(+sW.value>0?"+":"")+sW.value+"%";
+      const bef=c2.map((o,i)=>Object.assign({Q:b[i].Q},o));
+      const aft=bef.map(o=>{ const r={Q:o.Q}; if(fin(o.VC)&&fin(o.Q)){ r.VC=o.VC*sc+d*o.Q; r.TC=FCn+r.VC; r.FC=FCn;
+        if(o.Q>0){ r.AFC=FCn/o.Q; r.AVC=r.VC/o.Q; r.ATC=r.TC/o.Q; } } return r; });
+      aft.forEach((r,i)=>{ if(i>0&&fin(r.TC)&&fin(aft[i-1].TC)&&r.Q!==aft[i-1].Q) r.MC=(r.TC-aft[i-1].TC)/(r.Q-aft[i-1].Q); });
+      const fade={op:.3,noLegend:true,noLabel:true,noPts:true};
+      const series=[S.MC(bef,fade),S.ATC(bef,fade),S.AVC(bef,fade),S.AFC(bef,fade),S.MC(aft),S.ATC(aft),S.AVC(aft),S.AFC(aft)];
+      const ma=argminRows(aft,"ATC"), mb=argminRows(bef,"ATC");
+      plot(g("g6"),g("lg6"),{xmax:Q2max,ymax:Math.max(um,100),xlab:"Q (dozens per hour)",ylab:"'000 VND per dozen",
+        vlines: ma.length===1?[{x:aft[ma[0]].Q,y:aft[ma[0]].ATC,label:"Efficient scale"}]:[], series});
+      // which curves moved?
+      const dir=k=>{ const ds=[]; bef.forEach((o,i)=>{ if(i&&fin(o[k])&&fin(aft[i][k])) ds.push(aft[i][k]-o[k]); });
+        if(!ds.length) return "";
+        if(ds.every(x=>Math.abs(x)<1e-9)) return "does <b>not</b> move";
+        const same=ds.every(x=>Math.abs(x-ds[0])<1e-6), by=same?` by ${fmt(Math.abs(ds[0]))} at every Q`:"";
+        if(ds.every(x=>x>=-1e-9)) return `shifts <b>up</b>${by}`;
+        if(ds.every(x=>x<=1e-9)) return `shifts <b>down</b>${by}`;
+        return "moves <b>up</b> at some quantities and <b>down</b> at others"; };
+      const unchanged = FCn===fc0 && d===0 && sc===1;
+      g("moved").innerHTML = unchanged ? "<h3>Which curves moved?</h3><p>Nothing yet. Drag a slider or pick a change.</p>" :
+        "<h3>Which curves moved?</h3><ul>"+["AFC","AVC","ATC","MC"].map(k=>`<li><span class="c-${k.toLowerCase()}">${k}</span> ${dir(k)}.</li>`).join("")+"</ul>";
+      // before / after table
+      const q0 = mb.length ? mb[0] : -1, mav=argminRows(bef,"AVC"), maa=argminRows(aft,"AVC");
+      const cls=(x,y)=>!fin(x)||!fin(y)||Math.abs(x-y)<1e-9?"":(y>x?"up":"down");
+      const rowsBA=[];
+      if(mb.length&&ma.length) rowsBA.push(["Efficient scale (lowest ATC)",`Q = ${listQ(bef,mb)}, ATC = ${fmt(bef[mb[0]].ATC)}`,`Q = ${listQ(aft,ma)}, ATC = ${fmt(aft[ma[0]].ATC)}`,cls(bef[mb[0]].ATC,aft[ma[0]].ATC)]);
+      if(mav.length&&maa.length) rowsBA.push(["Lowest AVC",`Q = ${listQ(bef,mav)}, AVC = ${fmt(bef[mav[0]].AVC)}`,`Q = ${listQ(aft,maa)}, AVC = ${fmt(aft[maa[0]].AVC)}`,cls(bef[mav[0]].AVC,aft[maa[0]].AVC)]);
+      if(q0>0){ const Qs=fmt(bef[q0].Q);
+        rowsBA.push([`ATC at Q = ${Qs}`,fmt(bef[q0].ATC),fmt(aft[q0].ATC),cls(bef[q0].ATC,aft[q0].ATC)]);
+        rowsBA.push([`MC of dozen ${Qs}`,fmt(bef[q0].MC),fmt(aft[q0].MC),cls(bef[q0].MC,aft[q0].MC)]); }
+      g("beforeAfter").innerHTML = rowsBA.length ? `<table class="ba"><thead><tr><th></th><th>Before</th><th>After</th></tr></thead><tbody>`+
+        rowsBA.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${r[3]}">${r[2]}</td></tr>`).join("")+"</tbody></table>"
+        : '<p class="small">Enter Q and TC in Part 4 to see this.</p>';
+    } else {
+      const vl=[]; if(minATC.length===1) vl.push({x:b[minATC[0]].Q,y:b[minATC[0]].ATC,label:"Efficient scale"});
+      plot(g("g5"),g("lg5"),{xmax:Q2max,ymax:um,xlab:"Q (dozens per hour)",ylab:"'000 VND per dozen",vlines:vl,
+        empty:"Fill in the cost table in Part 4 first",series:[S.MC(b),S.ATC(b),S.AVC(b)]});
+      const box=g("ins5");
+      if(minATC.length){
+        box.innerHTML=`<h3>Efficient scale</h3><p>The quantity with the lowest ATC is the <b>efficient scale</b>. For your factory: <b>${listQ(b,minATC)} dozen</b> per hour, at ATC = ${fmt(b[minATC[0]].ATC)}.</p>`+
+          (minAVC.length?`<p>AVC is lowest at ${listQ(b,minAVC)} dozen (AVC = ${fmt(b[minAVC[0]].AVC)}). MC crosses AVC there too.</p>`:"");
+      } else box.innerHTML="<h3>Efficient scale</h3><p>Fill in the ATC column in Part 4 to find it.</p>";
+    }
+  }
 }
+const g=id=>document.getElementById(id);
 document.getElementById("midpts").onchange=()=>renderAll();
-document.getElementById("ymaxUnit").oninput=()=>renderAll();
 
-// show / hide individual graphs (remembered in this browser)
-const SHOW_KEY="prodCostExplorer.show";
-let shown=["1","2","3","4"];
-try{ const s=JSON.parse(localStorage.getItem(SHOW_KEY)); if(Array.isArray(s)) shown=s; }catch(e){}
-function applyShown(){
-  document.querySelectorAll("[data-plot]").forEach(p=>{ p.hidden=!shown.includes(p.dataset.plot); });
-  document.querySelectorAll("[data-show]").forEach(b=>b.setAttribute("aria-pressed", shown.includes(b.dataset.show)));
-  document.getElementById("grid4").classList.toggle("one", shown.length===1);
-  document.getElementById("noneShown").hidden = shown.length>0;
-  try{ localStorage.setItem(SHOW_KEY, JSON.stringify(shown)); }catch(e){}
-}
-function toggleShown(k){ shown = shown.includes(k) ? shown.filter(x=>x!==k) : [...shown,k].sort(); applyShown(); }
-document.querySelectorAll("[data-show]").forEach(b=>b.onclick=()=>toggleShown(b.dataset.show));
-document.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>toggleShown(b.dataset.hide));
-document.getElementById("showAll").onclick=()=>{ shown=["1","2","3","4"]; applyShown(); };
-applyShown();
-
-// ---------------------------------------------------------------- rotation demo (Table 1)
+// ---------------------------------------------------------------- part 3: flip demo (Table 1)
 // Normalized coordinates: u = L/Lmax (horizontal), v = Q/Qmax (vertical).
 // Flipping = rotating 180 degrees in 3D around the 45-degree line, so (u, v) ends at (v, u).
-const rotSvg=document.getElementById("rot"), stageIn=document.getElementById("stage"), capEl=document.getElementById("caption");
+const rotSvg=g("rot"), stageIn=g("stage"), capEl=g("caption");
 const RO={ox:110, oy:440, S:380};
-function rot3(u,v,th){ const a=(u+v)/2, d=(u-v)/2, c=Math.cos(th), s=Math.sin(th); return [a+c*d, a-c*d, -s*(u-v)/Math.SQRT2]; }
+function rot3(u,v,th){ const a=(u+v)/2, d=(u-v)/2, c=Math.cos(th); return [a+c*d, a-c*d, -Math.sin(th)*(u-v)/Math.SQRT2]; }
 function proj(p){ const D=3.2, k=D/(D-p[2]); return [RO.ox+(0.5+(p[0]-0.5)*k)*RO.S, RO.oy-(0.5+(p[1]-0.5)*k)*RO.S]; }
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
@@ -563,7 +927,7 @@ function mix(c1,c2,t){
   const a=h(c1),b=h(c2); return "rgb("+a.map((x,i)=>Math.round(x+(b[i]-x)*t)).join(",")+")";
 }
 const CAPS=[
-  "<b>Step 1. The production function</b> Q = f(L). Diminishing marginal product: each extra worker adds fewer T-shirts, so the curve gets flatter.",
+  "<b>Step 1. The production function</b> Q = f(L) from Part 1. Diminishing marginal product: each extra worker adds fewer T-shirts, so the curve gets flatter.",
   "<b>Step 2. Flip it around the 45&deg; line.</b> The same curve now answers: how many workers L do I need to sew Q T-shirts? Flat parts become steep parts.",
   "<b>Step 3. Multiply workers by the wage.</b> VC = w &times; L. The curve keeps its shape: it is the production function, flipped, measured in money.",
   "<b>Step 4. Add fixed cost.</b> TC = FC + VC. Same shape again, shifted up by FC. Diminishing MP is why TC bends upward and MC rises."
@@ -576,39 +940,39 @@ function renderRot(){
   const FC=num(state.t1.fc)||0, w=num(state.t1.wage)||0;
   const rows=state.t1.rows.map((r,i)=>({L:num(r.L),Q:num(r.Q),id:"t1:"+i})).filter(r=>fin(r.L)&&fin(r.Q));
   rotSvg.innerHTML="";
-  if(rows.length<2){ el("text",{x:320,y:260,"text-anchor":"middle"},rotSvg).textContent="Fill in at least two rows of L and Q in Table 1"; return; }
+  if(rows.length<2){ el("text",{x:320,y:260,"text-anchor":"middle"},rotSvg).textContent="Fill in at least two rows of L and Q in Part 1"; return; }
   const Lmax=niceMax(Math.max(...rows.map(r=>r.L))*1.05,6), Qmax=niceMax(Math.max(...rows.map(r=>r.Q))*1.08,5);
   const Cmax=niceMax((FC+w*Math.max(...rows.map(r=>r.L)))*1.05,5)||1;
   const uOf=L=>{ const u1=L/Lmax, u2=w*L/Cmax; return u1+(u2-u1)*t2 + (FC/Cmax)*t3; };
   const P=(u,v)=>proj(rot3(u,v,th));
   const muted=cssv("--muted"), ink2=cssv("--ink2");
-  const g=el("g",{},rotSvg);
+  const gg=el("g",{},rotSvg);
   const hingeOp = s<=1 ? 1 : clamp(1-(s-1)*2,0,1);
   if(hingeOp>0){
     const a=P(0,0), b=P(1.04,1.04);
-    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:muted,"stroke-dasharray":"5 5","stroke-width":1.5,opacity:hingeOp},g);
-    el("text",{x:b[0]+6,y:b[1],opacity:hingeOp},g).textContent="45° line (hinge)";
+    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:muted,"stroke-dasharray":"5 5","stroke-width":1.5,opacity:hingeOp},gg);
+    el("text",{x:b[0]+6,y:b[1],opacity:hingeOp},gg).textContent="45° line (hinge)";
   }
   const uA=[P(0,0),P(1.06,0)], vA=[P(0,0),P(0,1.06)];
-  [uA,vA].forEach(A=>el("line",{x1:A[0][0],y1:A[0][1],x2:A[1][0],y2:A[1][1],stroke:ink2,"stroke-width":1.5},g));
+  [uA,vA].forEach(A=>el("line",{x1:A[0][0],y1:A[0][1],x2:A[1][0],y2:A[1][1],stroke:ink2,"stroke-width":1.5},gg));
   const early=th<Math.PI/2;
   const qs=niceStep(Qmax,5);
-  for(let q=qs;q<=Qmax+1e-9;q+=qs){ const p=P(0,q/Qmax); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2},g); const off=early?[-8,4,"end"]:[0,18,"middle"]; el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2]},g).textContent=fmt(q); }
+  for(let q=qs;q<=Qmax+1e-9;q+=qs){ const p=P(0,q/Qmax); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2},gg); const off=early?[-8,4,"end"]:[0,18,"middle"]; el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2]},gg).textContent=fmt(q); }
   const lOp=1-t2, cOp=t2, ls=niceStep(Lmax,7);
-  for(let L=ls;L<=Lmax+1e-9;L+=ls){ const p=P(uOf(L)-(FC/Cmax)*t3,0); const off=early?[0,18,"middle"]:[-8,4,"end"]; el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:lOp},g); if(lOp>0.02) el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2],opacity:lOp},g).textContent=fmt(L); }
-  if(cOp>0.02){ const cs=niceStep(Cmax,5); for(let c=cs;c<=Cmax+1e-9;c+=cs){ const p=P(c/Cmax,0); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:cOp},g); el("text",{x:p[0]-8,y:p[1]+4,"text-anchor":"end",opacity:cOp},g).textContent=fmtc(c); } }
+  for(let L=ls;L<=Lmax+1e-9;L+=ls){ const p=P(uOf(L)-(FC/Cmax)*t3,0); const off=early?[0,18,"middle"]:[-8,4,"end"]; el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:lOp},gg); if(lOp>0.02) el("text",{x:p[0]+off[0],y:p[1]+off[1],"text-anchor":off[2],opacity:lOp},gg).textContent=fmt(L); }
+  if(cOp>0.02){ const cs=niceStep(Cmax,5); for(let c=cs;c<=Cmax+1e-9;c+=cs){ const p=P(c/Cmax,0); el("circle",{cx:p[0],cy:p[1],r:2,fill:ink2,opacity:cOp},gg); el("text",{x:p[0]-8,y:p[1]+4,"text-anchor":"end",opacity:cOp},gg).textContent=fmtc(c); } }
   const uEnd=uA[1], vEnd=vA[1];
   const uTitle = t2<0.5 ? "L (workers)" : (t3<0.5 ? "VC ('000 VND/hour)" : "TC ('000 VND/hour)");
-  el("text",{x:uEnd[0]+(early?6:0),y:uEnd[1]+(early?4:-10),"text-anchor":early?"start":"middle",class:"lbl"},g).textContent=uTitle;
-  el("text",{x:vEnd[0]+(early?0:6),y:vEnd[1]+(early?-10:4),"text-anchor":early?"middle":"start",class:"lbl"},g).textContent="Q (T-shirts/hour)";
-  const ghost=document.getElementById("ghost").checked;
-  const line=(pts,col,dash,op,wd)=>el("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",stroke:col,"stroke-width":wd||3,"stroke-dasharray":dash||"","stroke-linejoin":"round",opacity:op},g);
+  el("text",{x:uEnd[0]+(early?6:0),y:uEnd[1]+(early?4:-10),"text-anchor":early?"start":"middle",class:"lbl"},gg).textContent=uTitle;
+  el("text",{x:vEnd[0]+(early?0:6),y:vEnd[1]+(early?-10:4),"text-anchor":early?"middle":"start",class:"lbl"},gg).textContent="Q (T-shirts/hour)";
+  const ghost=g("ghost").checked;
+  const line=(pts,col,dash,op,wd)=>el("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",stroke:col,"stroke-width":wd||3,"stroke-dasharray":dash||"","stroke-linejoin":"round",opacity:op},gg);
   if(ghost && s>0.02 && s<=1.02) line(rows.map(r=>proj([r.L/Lmax,r.Q/Qmax,0])),cssv("--prod"),"4 5",0.3,2);
-  if(ghost && s>2.02){ const gp=rows.map(r=>proj(rot3(w*r.L/Cmax,r.Q/Qmax,Math.PI))); line(gp,cssv("--avc"),"7 4",0.55,2); const e=gp[gp.length-1]; el("text",{x:e[0]+10,y:e[1]+4,class:"lbl",opacity:t3},g).textContent="VC"; }
+  if(ghost && s>2.02){ const gp=rows.map(r=>proj(rot3(w*r.L/Cmax,r.Q/Qmax,Math.PI))); line(gp,cssv("--avc"),"7 4",0.55,2); const e=gp[gp.length-1]; el("text",{x:e[0]+10,y:e[1]+4,class:"lbl",opacity:t3},gg).textContent="VC"; }
   if(t3>0.02){
     const a=P(FC/Cmax*t3,0), b=P(FC/Cmax*t3,1.02);
-    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cssv("--afc"),"stroke-dasharray":"2 4","stroke-width":2,opacity:t3},g);
-    el("text",{x:b[0]+4,y:b[1]+4,opacity:t3},g).textContent="FC = "+fmtc(FC);
+    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cssv("--afc"),"stroke-dasharray":"2 4","stroke-width":2,opacity:t3},gg);
+    el("text",{x:b[0]+4,y:b[1]+4,opacity:t3},gg).textContent="FC = "+fmtc(FC);
   }
   let col=cssv("--prod"); const cp=cssv("--prod"),cv=cssv("--avc"),ct=cssv("--atc");
   if(s>1) col = s<=2 ? mix(cp,cv,t2) : mix(cv,ct,t3);
@@ -617,20 +981,20 @@ function renderRot(){
   const H_ROW=hl();
   rows.forEach((r,k)=>{
     const p=pts[k], on=r.id===H_ROW;
-    el("circle",{cx:p[0],cy:p[1],r:on?7:4.5,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2},g);
+    el("circle",{cx:p[0],cy:p[1],r:on?7:4.5,fill:on?col:cssv("--surface"),stroke:col,"stroke-width":2},gg);
     if(on){
       const third = s<1.5 ? `L = ${fmt(r.L)}` : (s<2.5 ? `VC = ${fmtc(w*r.L)}` : `TC = ${fmtc(FC+w*r.L)}`);
-      el("text",{x:p[0]+12,y:p[1]+22,class:"lbl"},g).textContent=`Q = ${fmt(r.Q)}, ${third}`;
+      el("text",{x:p[0]+12,y:p[1]+22,class:"lbl"},gg).textContent=`Q = ${fmt(r.Q)}, ${third}`;
     }
   });
   const last=pts[pts.length-1];
   const nm = s<1.5 ? (s<0.5?"Q = f(L)":"L needed for Q") : (s<2.5?"VC":"TC");
-  el("text",{x:last[0]+10,y:last[1]+4,class:"lbl"},g).textContent=nm;
+  el("text",{x:last[0]+10,y:last[1]+4,class:"lbl"},gg).textContent=nm;
 }
 stageIn.addEventListener("input",()=>{ stopPlay(); renderRot(); });
-document.getElementById("ghost").onchange=renderRot;
+g("ghost").onchange=renderRot;
 let anim=null;
-const playBtn=document.getElementById("play");
+const playBtn=g("play");
 function stopPlay(){ if(anim){ cancelAnimationFrame(anim); anim=null; playBtn.innerHTML="&#9654; Play"; } }
 function goTo(target, dur){
   stopPlay(); const from=+stageIn.value, t0=performance.now();
@@ -646,25 +1010,43 @@ playBtn.onclick=()=>{
   if(next===0){ stageIn.value=0; renderRot(); return; }
   goTo(next, next===1?2200:1400);
 };
+let p3tab="flip";
+function showP3(t){ p3tab=t; g("paneFlip").hidden=t!=="flip"; g("paneTC").hidden=t!=="tc";
+  g("tabFlip").setAttribute("aria-pressed",t==="flip"); g("tabTC").setAttribute("aria-pressed",t==="tc"); renderAll(); }
+g("tabFlip").onclick=()=>showP3("flip"); g("tabTC").onclick=()=>showP3("tc");
 
-// ---------------------------------------------------------------- tabs
-function showTab(which){
-  document.getElementById("paneGraphs").hidden = which!=="graphs";
-  document.getElementById("paneRotate").hidden = which!=="rotate";
-  document.getElementById("tabGraphs").setAttribute("aria-pressed", which==="graphs");
-  document.getElementById("tabRotate").setAttribute("aria-pressed", which==="rotate");
+// ---------------------------------------------------------------- parts navigation
+const PART_KEY="prodCostExplorer.part", NPARTS=7;
+let part=1; try{ const p=+localStorage.getItem(PART_KEY); if(p>=1&&p<=NPARTS) part=p; }catch(e){}
+function goPart(p, scroll){
+  part=clamp(p,1,NPARTS); stopPlay(); hoverRow=null; hideTip();
+  document.querySelectorAll(".part").forEach(s=>s.hidden = +s.dataset.part!==part);
+  document.querySelectorAll("[data-go]").forEach(b=>{ if(+b.dataset.go===part) b.setAttribute("aria-current","step"); else b.removeAttribute("aria-current"); });
+  g("prev").disabled = part===1; g("next").disabled = part===NPARTS;
+  g("next").innerHTML = part<NPARTS ? `Next: ${document.querySelector(`[data-go="${part+1}"]`).textContent.slice(1)} &rarr;` : "Next &rarr;";
+  g("pos").textContent = `Part ${part} of ${NPARTS}`;
+  try{ localStorage.setItem(PART_KEY,part); }catch(e){}
   renderAll();
+  if(scroll) window.scrollTo({top:0,behavior:"smooth"});
 }
-document.getElementById("tabGraphs").onclick=()=>showTab("graphs");
-document.getElementById("tabRotate").onclick=()=>showTab("rotate");
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>goPart(+b.dataset.go,false));
+g("prev").onclick=()=>goPart(part-1,true); g("next").onclick=()=>goPart(part+1,true);
+document.addEventListener("keydown",e=>{
+  const t=e.target; if(e.altKey||e.ctrlKey||e.metaKey) return;
+  if(t && (t.tagName==="INPUT"||t.tagName==="TEXTAREA")) return;
+  if(e.key==="ArrowRight") goPart(part+1,true); else if(e.key==="ArrowLeft") goPart(part-1,true);
+});
 
-function renderAll(){ renderGraphs(); renderRot(); }
+function renderAll(){ renderGraphs(); if(part===3 && p3tab==="flip") renderRot(); }
 
 // ---------------------------------------------------------------- start
-buildTable("t1"); buildTable("t2");
-setMode(state.mode||"hand");
+buildTk("t1"); buildTk("t2");
+applyCurves();
 let th0="auto"; try{ th0=localStorage.getItem(THEME_KEY)||"auto"; }catch(e){}
-applyTheme(th0);
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.themeBtn===th0));
+if(th0!=="auto") document.documentElement.setAttribute("data-theme",th0);
+setMode(state.mode||"hand");
+goPart(part,false);
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>renderAll());
 })();
 </script>
