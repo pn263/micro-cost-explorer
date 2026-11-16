@@ -24,8 +24,9 @@
     shut down below 11, exit below 26.
   - Practice A and B (Part 1 only): the cost tables of the production cost explorer's practice sets
     (A: FC 40, TC 40/52/60/66/76/92/116/150/198; B: FC 120, TC 120/150/172/192/218/252/298/360/444).
-  - Official T-shirt monopoly = Topic 8: P = 50 - 0.5Q, MR = 50 - Q, MC = 20, license 200 per day (the fixed cost);
-    Q = 30, P = 35, profit 250.
+  - Official T-shirt monopoly = Topic 8 (changed 2026-11-16 from constant MC = 20 to a rising MC):
+    P = 50 - 0.5Q, MR = 50 - Q, MC = 20 + 0.5Q, license 200 per day (the fixed cost), TC = 200 + 20Q + 0.25Q^2.
+    MR = MC -> Q = 20, P = 40, ATC = 35, profit 100 (profit -200 at Q = 0 and Q = 40).
   With whole dozens, the best Q is the last dozen whose MC is not above MR (Mankiw ch. 14, Table 1 logic).
   Colors: TR, MR, P and demand blue (the demand side); TC and MC red; ATC orange; AVC green (as in the cost explorer).
   Sources: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 14 and 15. Cengage.
@@ -354,9 +355,9 @@ function save(){ try{ localStorage.setItem(KEY,JSON.stringify({part:st.part,firm
 // ---------------------------------------------------------------- part 1 model
 function M1(){
   if(st.firm==="mono"){
-    return {mono:true, n:60, disc:false, FC:200, best:30, step:5, xstep:10,
-      tr:q=>50*q-0.5*q*q, tc:q=>200+20*q, mr:q=>50-q, mc:()=>20, dem:q=>50-0.5*q,
-      yA:[0,1400], yB:[-200,250], yC:[0,55], unitQ:"T-shirts per day", per:"day", unit:"T-shirt"};
+    return {mono:true, n:40, disc:false, FC:200, best:20, step:5, xstep:5,
+      tr:q=>50*q-0.5*q*q, tc:q=>200+20*q+0.25*q*q, mr:q=>50-q, mc:q=>20+0.5*q, dem:q=>50-0.5*q,
+      yA:[0,1400], yB:[-200,150], yC:[0,55], unitQ:"T-shirts per day", per:"day", unit:"T-shirt"};
   }
   const C=costs(st.ex), P=st.p1, T=C.T, n=C.n, ex=C.ex;
   const tc=q=>{ if(q<=0) return T[0]; if(q>=n) return T[n]; const k=Math.floor(q); return T[k]+(q-k)*(T[k+1]-T[k]); };
@@ -439,8 +440,8 @@ function render1(){
   document.querySelectorAll("[data-firm]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.firm===st.firm));
   const sc=$("scrub1"); sc.max=M.n; sc.step=M.disc?0.01:0.1; sc.value=t;
   $("firmNote").innerHTML=M.mono
-    ? `Your factory holds the only license for the official university logo T-shirt. Demand: P = 50 &minus; 0.5Q, so <span class="c-dem">MR = 50 &minus; Q</span>. <span class="c-mc">MC = 20</span> per T-shirt; the license costs 200 per day (the fixed cost).`
-    : `Many identical workshops: your factory takes the market price as given, so every dozen brings in <span class="c-dem">MR = P</span>. Costs: the Topic 6 cost table (FC = ${M.FC}).`;
+    ? `Your factory holds the only license for the official university logo T-shirt. Demand: P = 50 &minus; 0.5Q, so <span class="c-dem">MR = 50 &minus; Q</span>. Each extra T-shirt costs a bit more to make (overtime): <span class="c-mc">MC = 20 + 0.5Q</span>. The license costs 200 per day (the fixed cost).`
+    : `Many identical factories: your factory takes the market price as given, so every dozen brings in <span class="c-dem">MR = P</span>. Costs: the Topic 6 cost table (FC = ${M.FC}).`;
 
   // graph A: TR and TC
   const A=frame($("gA"),{fitb:22,xmax:M.n,xstep:M.xstep,y:M.yA,xlab,ylab:"TR, TC ('000 VND per "+M.per+")"});
@@ -509,11 +510,11 @@ function caption1(M,t){
   const atBest=Math.abs(t-M.best)<1e-6, pi=q=>M.tr(q)-M.tc(q);
   if(t<1e-9) return `Q = 0: no revenue, but you still pay the fixed cost (${fmt(M.FC)}). Profit = <b>${fmt(-M.FC)}</b>. Press play.`;
   if(M.mono){
-    const mr=M.mr(t), d=mr-20;
-    if(atBest) return `<b>Top of the hill.</b> At Q = 30, MR = MC = 20: the last T-shirt adds as much revenue as cost. Profit = <b>250</b>, the highest possible. Charge the price on the demand curve: P = 35.`;
-    if(Math.abs(d)<0.5) return `At Q = ${fmt(t)}, MR (${fmt(mr)}) is almost equal to MC (20): profit is near its top.`;
-    return d>0 ? `At Q = ${fmt(t)}: MR = ${fmt(mr)} &gt; MC = 20. One more T-shirt adds about <b>${fmt(d)}</b> to profit, so <b>keep going</b>. The gap between TR and TC is still widening.`
-               : `At Q = ${fmt(t)}: MR = ${fmt(mr)} &lt; MC = 20. One more T-shirt <b>lowers</b> profit by about ${fmt(-d)}. You went too far: the gap is closing. MR keeps falling because selling more means cutting the price on every T-shirt.`;
+    const mr=M.mr(t), mc=M.mc(t), d=mr-mc, b=M.best;
+    if(atBest) return `<b>Top of the hill.</b> At Q = ${b}, MR = MC = ${fmt(M.mc(b))}: the last T-shirt adds as much revenue as cost. Profit = <b>${fmt(pi(b))}</b>, the highest possible. Charge the price on the demand curve: P = ${fmt(M.dem(b))}.`;
+    if(Math.abs(d)<0.5) return `At Q = ${fmt(t)}, MR (${fmt(mr)}) is almost equal to MC (${fmt(mc)}): profit is near its top.`;
+    return d>0 ? `At Q = ${fmt(t)}: MR = ${fmt(mr)} &gt; MC = ${fmt(mc)}. One more T-shirt adds about <b>${fmt(d)}</b> to profit, so <b>keep going</b>. The gap between TR and TC is still widening.`
+               : `At Q = ${fmt(t)}: MR = ${fmt(mr)} &lt; MC = ${fmt(mc)}. One more T-shirt <b>lowers</b> profit by about ${fmt(-d)}. You went too far: the gap is closing. MR keeps falling (selling more means cutting the price on every T-shirt) while MC keeps rising.`;
   }
   const C=M.C, P=M.P, k=Math.max(1,Math.ceil(t-1e-7)), d=P-C.MC[k];
   if(atBest){
@@ -533,9 +534,9 @@ function table1(M,t){
   const rows=[]; const pi=q=>M.tr(q)-M.tc(q);
   if(M.mono){
     rows.push("<thead><tr><th>Q</th><th>P</th><th>TR</th><th>TC</th><th>Profit</th><th>MR</th><th>MC</th></tr></thead><tbody>");
-    const cur=Math.round(t/10)*10;
-    for(let q=0;q<=60;q+=10){ const v=pi(q);
-      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${q===30?"best":""}"><td>${q}</td><td>${fmt(M.dem(q))}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${fmt(M.mr(q))}</td><td>20</td></tr>`); }
+    const cur=Math.round(t/5)*5;
+    for(let q=0;q<=M.n;q+=5){ const v=pi(q);
+      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${q===M.best?"best":""}"><td>${q}</td><td>${fmt(M.dem(q))}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${fmt(M.mr(q))}</td><td>${fmt(M.mc(q))}</td></tr>`); }
     rows.push("</tbody>");
   } else {
     rows.push("<thead><tr><th>Q</th><th>TR</th><th>TC</th><th>Profit</th><th>MR</th><th>MC</th><th>MR &minus; MC</th></tr></thead><tbody>");
