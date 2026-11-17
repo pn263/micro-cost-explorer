@@ -18,16 +18,16 @@
             P >= min ATC: profit, stay. min AVC <= P < min ATC: loss, keep producing now, exit in the long run.
             P < min AVC: shut down now. The firm's supply curve (MC above min AVC) is traced alongside.
   Numbers (all hypothetical, '000 VND):
-  - Your factory = Topic 6 Table 2: Q = 0..8 dozen T-shirts per hour, FC 60, TC 60/74/84/93/108/130/162/210/280,
-    MC 14/10/9/15/22/32/48/70, AVC min 11 at Q = 3, ATC min 26 at Q = 5.
-    Topic 7: P = 30 -> Q = 5, profit 20 (profits -60,-44,-24,-3,12,20,18,0,-40); P = 20 -> Q = 4, loss 28 (< 60);
-    shut down below 11, exit below 26.
-  - Practice A and B (Part 1 only): the cost tables of the production cost explorer's practice sets
-    (A: FC 40, TC 40/52/60/66/76/92/116/150/198; B: FC 120, TC 120/150/172/192/218/252/298/360/444).
+  - Your factory (price taker, Part 1). CHANGED 2026-11-17 (instructor: smooth curves, no jagged MC): no longer the
+    Topic 6 cost table but the smooth costs of the Topic 7A calculus slide: TC = 50 + 2Q + Q^2, MC = 2 + 2Q.
+    P = 20 -> Q = 9, profit 31 (the calculus slide); P = 30 -> Q = 14, profit 146 (the "Your turn" slide).
+    In general TC = F + aQ + bQ^2, Q* = (P - a) / 2b; the Q axis runs to 2Q*, so the profit hill is symmetric.
+  - Practice A and B (Part 1 only, also smooth since 2026-11-17):
+    A: TC = 20 + 4Q + 0.5Q^2, MC = 4 + Q; P = 14 -> Q = 10, profit 30.
+    B: TC = 200 + 10Q + 0.5Q^2, MC = 10 + Q; P = 40 -> Q = 30, profit 250.
   - Official T-shirt monopoly = Topic 8 (changed 2026-11-16 from constant MC = 20 to a rising MC):
     P = 50 - 0.5Q, MR = 50 - Q, MC = 20 + 0.5Q, license 200 per day (the fixed cost), TC = 200 + 20Q + 0.25Q^2.
     MR = MC -> Q = 20, P = 40, ATC = 35, profit 100 (profit -200 at Q = 0 and Q = 40).
-  With whole dozens, the best Q is the last dozen whose MC is not above MR (Mankiw ch. 14, Table 1 logic).
   Colors: TR, MR, P and demand blue (the demand side); TC and MC red; ATC orange; AVC green (as in the cost explorer).
   Sources: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 14 and 15. Cengage.
 -->
@@ -114,7 +114,7 @@ input[type=range]{accent-color:var(--accent)}
 .caption b{color:var(--accent)}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
-th{font-weight:600;color:var(--ink2);padding:4px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--surface);font-weight:600;color:var(--ink2);padding:4px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:3px 4px;text-align:center;border-bottom:1px solid var(--grid)}
 tbody tr{cursor:pointer}
 tr.cur td{background:var(--sel)}
@@ -172,9 +172,9 @@ footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px s
     <span class="exctl" id="exctl">
       <label for="exSel">Numbers for your factory</label>
       <select id="exSel">
-        <option value="class">Your factory (class example)</option>
-        <option value="A">Practice A: small workshop</option>
-        <option value="B">Practice B: large factory</option>
+        <option value="class">Your factory: TC = 50 + 2Q + Q²</option>
+        <option value="A">Practice A: TC = 20 + 4Q + 0.5Q²</option>
+        <option value="B">Practice B: TC = 200 + 10Q + 0.5Q²</option>
       </select>
     </span>
     <span class="seg" role="group" aria-label="Theme">
@@ -237,7 +237,7 @@ footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px s
       <p class="small" id="firmNote" style="margin:0 4px"></p>
     </div>
     <div class="card">
-      <div class="tablewrap" id="tb1"></div>
+      <div class="tablewrap" id="tb1" style="max-height:330px;overflow-y:auto;position:relative"></div>
       <p class="small" style="margin:6px 0 0">Click a row to jump to it. Space = play/pause, arrow keys = one step.</p>
     </div>
     <div class="col">
@@ -246,7 +246,7 @@ footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px s
         <ul>
           <li>If <span class="c-dem">MR</span> &gt; <span class="c-mc">MC</span>, one more unit <b>raises</b> profit: produce more.</li>
           <li>If <span class="c-dem">MR</span> &lt; <span class="c-mc">MC</span>, one more unit <b>lowers</b> profit: produce less.</li>
-          <li>Profit is highest where <b>MR = MC</b>. With whole dozens: make every dozen whose MC is not above MR, and stop.</li>
+          <li>Profit is highest where <b>MR = MC</b>.</li>
           <li>There the gap between TR and TC is the widest: the two curves have the <b>same slope</b> (slope of TR = MR, slope of TC = MC).</li>
         </ul>
       </div>
@@ -314,7 +314,7 @@ footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px s
 </main>
 
 <footer>
-  All numbers are hypothetical (your factory: the Topic 6 cost table; the monopoly: Topic 8). Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 14 (Firms in Competitive Markets) and ch. 15 (Monopoly). Cengage.
+  All numbers are hypothetical (your factory in Part 1: TC = 50 + 2Q + Q², as on the Topic 7A calculus slide; the monopoly: Topic 8). Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 14 (Firms in Competitive Markets) and ch. 15 (Monopoly). Cengage.
 </footer>
 
 <script>
@@ -332,23 +332,19 @@ function niceStep(range,n){ if(!(range>0)) return 1; const raw=range/n, p=Math.p
 const EPS=1e-9;
 
 // ---------------------------------------------------------------- numbers
+// smooth costs TC = F + aQ + bQ^2, so MC = a + 2bQ (pMin > a, so the firm always produces)
 const EX={
-  class:{FC:60,  TC:[60,74,84,93,108,130,162,210,280],     p0:30, pMin:5,  pMax:50},
-  A:    {FC:40,  TC:[40,52,60,66,76,92,116,150,198],       p0:20, pMin:4,  pMax:40},
-  B:    {FC:120, TC:[120,150,172,192,218,252,298,360,444], p0:60, pMin:15, pMax:80}
+  class:{F:50,  a:2,  b:1,   p0:20, pMin:6,  pMax:50},
+  A:    {F:20,  a:4,  b:0.5, p0:14, pMin:6,  pMax:40},
+  B:    {F:200, a:10, b:0.5, p0:40, pMin:14, pMax:80}
 };
-function costs(id){
-  const ex=EX[id], T=ex.TC, n=T.length-1, FC=ex.FC, MC=[NaN], AVC=[NaN], ATC=[NaN];
-  for(let k=1;k<=n;k++){ MC.push(T[k]-T[k-1]); AVC.push((T[k]-FC)/k); ATC.push(T[k]/k); }
-  let qv=1, qa=1; for(let k=2;k<=n;k++){ if(AVC[k]<AVC[qv]) qv=k; if(ATC[k]<ATC[qa]) qa=k; }
-  return {ex,T,n,FC,MC,AVC,ATC,qAVC:qv,minAVC:AVC[qv],qATC:qa,minATC:ATC[qa]};
-}
-// best whole quantity if the firm produces (Q >= 1); on a tie take the larger Q
-function bestQ(C,p){ let b=1; for(let k=2;k<=C.n;k++) if(p*k-C.T[k] >= p*b-C.T[b]-EPS) b=k; return b; }
+const coef=v=>v===1?"":fmt(v);
+function tcText(ex){ return `${ex.F} + ${coef(ex.a)}Q + ${coef(ex.b)}Q²`; }
+function mcText(ex){ return `${ex.a} + ${coef(2*ex.b)}Q`; }
 
 // ---------------------------------------------------------------- state
 const KEY="profitMaxExplorer.v1", THEME_KEY="profitMaxExplorer.theme";
-const st={part:1, firm:"comp", ex:"class", p1:30, p2:30, t:0, speed:1};
+const st={part:1, firm:"comp", ex:"class", p1:20, p2:30, t:0, speed:1};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){ if(s.part===2) st.part=2; if(s.firm==="mono") st.firm="mono"; if(EX[s.ex]){ st.ex=s.ex; st.p1=EX[s.ex].p0; } } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify({part:st.part,firm:st.firm,ex:st.ex})); }catch(e){} }
 
@@ -359,15 +355,14 @@ function M1(){
       tr:q=>50*q-0.5*q*q, tc:q=>200+20*q+0.25*q*q, mr:q=>50-q, mc:q=>20+0.5*q, dem:q=>50-0.5*q,
       yA:[0,1400], yB:[-200,150], yC:[0,55], unitQ:"T-shirts per day", per:"day", unit:"T-shirt"};
   }
-  const C=costs(st.ex), P=st.p1, T=C.T, n=C.n, ex=C.ex;
-  const tc=q=>{ if(q<=0) return T[0]; if(q>=n) return T[n]; const k=Math.floor(q); return T[k]+(q-k)*(T[k+1]-T[k]); };
-  const mc=q=>C.MC[Math.min(n,Math.max(1,Math.ceil(q-1e-7)))];
-  // axes fit the current price, so the gap between TR and TC fills the graph
-  let lo=0, hi=0; for(let k=0;k<=n;k++){ const v=P*k-T[k]; lo=Math.min(lo,v); hi=Math.max(hi,v); }
-  hi=Math.max(hi,0)+(hi-lo)*0.25; // headroom for the "highest profit" label
-  return {mono:false, n, disc:true, FC:C.FC, best:bestQ(C,P), step:1, xstep:1, P, C,
+  const ex=EX[st.ex], P=st.p1, best=Math.max(0,(P-ex.a)/(2*ex.b));
+  const tc=q=>ex.F+ex.a*q+ex.b*q*q, mc=q=>ex.a+2*ex.b*q;
+  // the Q axis runs to 2Q*, so the profit hill is symmetric and you see profit fall again after the top
+  const n=Math.max(2,Math.ceil(2*best-1e-9)), xstep=n<=12?1:n<=24?2:n<=60?5:10;
+  const piMax=P*best-tc(best), piEnd=P*n-tc(n), lo=Math.min(-ex.F,piEnd,0), hi=Math.max(piMax,0)+(Math.max(piMax,0)-lo)*0.25;
+  return {mono:false, n, disc:false, FC:ex.F, best, step:1, xstep, P, ex,
     tr:q=>P*q, tc, mr:()=>P, mc,
-    yA:[0,Math.max(P*n,T[n])], yB:[lo,hi], yC:[0,Math.max(ex.pMax,...C.MC.slice(1))],
+    yA:[0,Math.max(P*n,tc(n))], yB:[lo,hi], yC:[0,Math.max(P,mc(n))*1.1],
     unitQ:"dozens per hour", per:"hour", unit:"dozen"};
 }
 
@@ -441,7 +436,7 @@ function render1(){
   const sc=$("scrub1"); sc.max=M.n; sc.step=M.disc?0.01:0.1; sc.value=t;
   $("firmNote").innerHTML=M.mono
     ? `Your factory holds the only license for the official university logo T-shirt. Demand: P = 50 &minus; 0.5Q, so <span class="c-dem">MR = 50 &minus; Q</span>. Each extra T-shirt costs a bit more to make (overtime): <span class="c-mc">MC = 20 + 0.5Q</span>. The license costs 200 per day (the fixed cost).`
-    : `Many identical factories: your factory takes the market price as given, so every dozen brings in <span class="c-dem">MR = P</span>. Costs: the Topic 6 cost table (FC = ${M.FC}).`;
+    : `Many identical factories: your factory takes the market price as given, so every dozen brings in <span class="c-dem">MR = P</span>. Costs: <span class="c-mc">TC = ${tcText(M.ex)}</span>, so <span class="c-mc">MC = ${mcText(M.ex)}</span> (fixed cost ${fmt(M.FC)}).`;
 
   // graph A: TR and TC
   const A=frame($("gA"),{fitb:22,xmax:M.n,xstep:M.xstep,y:M.yA,xlab,ylab:"TR, TC ('000 VND per "+M.per+")"});
@@ -493,12 +488,11 @@ function render1(){
     label(C,C.X(eq)+7,C.Y(Math.min(b,C.y1))+(close?(a>=b?16:-4):4),"MC",cMC); }
   legend("lgC",M.mono
     ? [{c:"--dem",t:"Marginal revenue MR"},{c:"--dem",t:"Demand D",dash:1},{c:"--mc",t:"Marginal cost MC"}]
-    : [{c:"--dem",t:"MR = P"},{c:"--mc",t:"MC of each dozen"}]);
+    : [{c:"--dem",t:"MR = P"},{c:"--mc",t:"Marginal cost MC"}]);
 
   // readouts
-  const k=M.disc?Math.max(1,Math.ceil(t-1e-7)):t;
   const tiles=[["Q",fmt(t)],["TR",fmt(M.tr(t))],["TC",fmt(M.tc(t))],[g0>=0?"Profit":"Loss",fmt(g0),gc],
-    [M.disc?`MR (dozen ${k})`:"MR",fmt(M.mr(k)),cDem],[M.disc?`MC (dozen ${k})`:"MC",fmt(M.mc(k)),cMC]];
+    ["MR",fmt(M.mr(t)),cDem],["MC",fmt(M.mc(t)),cMC]];
   if(M.mono) tiles.splice(1,0,["P (demand)",fmt(M.dem(t))]);
   $("ro1").innerHTML=tiles.map(([a,b,c])=>`<div class="tile"><div class="k">${a}</div><div class="v"${c?` style="color:${c}"`:""}>${b}</div></div>`).join("");
   $("cap1").innerHTML=caption1(M,t);
@@ -516,18 +510,11 @@ function caption1(M,t){
     return d>0 ? `At Q = ${fmt(t)}: MR = ${fmt(mr)} &gt; MC = ${fmt(mc)}. One more T-shirt adds about <b>${fmt(d)}</b> to profit, so <b>keep going</b>. The gap between TR and TC is still widening.`
                : `At Q = ${fmt(t)}: MR = ${fmt(mr)} &lt; MC = ${fmt(mc)}. One more T-shirt <b>lowers</b> profit by about ${fmt(-d)}. You went too far: the gap is closing. MR keeps falling (selling more means cutting the price on every T-shirt) while MC keeps rising.`;
   }
-  const C=M.C, P=M.P, k=Math.max(1,Math.ceil(t-1e-7)), d=P-C.MC[k];
-  if(atBest){
-    let s=`<b>Top of the hill.</b> Q = ${M.best}, profit = <b>${fmt(pi(M.best))}</b>. Every dozen so far had MC &le; MR. `;
-    s+= M.best<M.n ? `The next one costs MC = ${fmt(C.MC[M.best+1])} &gt; MR = ${fmt(P)}, so stop here.` : `Every dozen in the table has MC &le; MR.`;
-    if(pi(M.best)< -M.FC-EPS) s+=` <b>But</b> the loss is bigger than the fixed cost (${fmt(M.FC)}): producing nothing is better. See Part 2.`;
-    return s;
-  }
-  let s=`Dozen ${k}: MR = ${fmt(P)}, MC = ${fmt(C.MC[k])}. `;
-  s+= d>0 ? `MR &gt; MC, so this dozen <b>adds ${fmt(d)}</b> to profit.` : d<0 ? `MR &lt; MC, so this dozen <b>lowers</b> profit by ${fmt(-d)}.` : `MR = MC: this dozen adds nothing.`;
-  s+= ` Profit at Q = ${fmt(t)}: <b>${fmt(pi(t))}</b>.`;
-  if(t>M.best+EPS) s+=` You went past the top (Q = ${M.best}).`;
-  return s;
+  const P=M.P, mc=M.mc(t), d=P-mc, b=M.best;
+  if(atBest) return `<b>Top of the hill.</b> At Q = ${fmt(b)}, MR = P = MC = ${fmt(P)}: the last bit of output adds as much revenue as cost. Profit = <b>${fmt(pi(b))}</b>, the highest possible.`;
+  if(Math.abs(d)<0.5) return `At Q = ${fmt(t)}, MR (${fmt(P)}) is almost equal to MC (${fmt(mc)}): profit is near its top.`;
+  return d>0 ? `At Q = ${fmt(t)}: MR = ${fmt(P)} &gt; MC = ${fmt(mc)}. One more dozen adds about <b>${fmt(d)}</b> to profit, so <b>keep going</b>. The gap between TR and TC is still widening.`
+             : `At Q = ${fmt(t)}: MR = ${fmt(P)} &lt; MC = ${fmt(mc)}. One more dozen <b>lowers</b> profit by about ${fmt(-d)}. You went past the top (Q = ${fmt(b)}): the gap is closing because MC keeps rising.`;
 }
 
 function table1(M,t){
@@ -540,12 +527,19 @@ function table1(M,t){
     rows.push("</tbody>");
   } else {
     rows.push("<thead><tr><th>Q</th><th>TR</th><th>TC</th><th>Profit</th><th>MR</th><th>MC</th><th>MR &minus; MC</th></tr></thead><tbody>");
-    const cur=Math.round(t);
-    for(let q=0;q<=M.n;q++){ const v=pi(q), d=q?M.P-M.C.MC[q]:NaN;
-      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${q===M.best&&t>=M.best-1e-6?"best":""}"><td>${q}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${q?fmt(M.P):""}</td><td>${q?fmt(M.C.MC[q]):""}</td><td class="${d>0?"pos":d<0?"neg":""}">${q?(d>0?"+":"")+fmt(d):""}</td></tr>`); }
+    // one row per whole dozen, plus the best Q when it is not a whole number
+    const qs=[]; for(let q=0;q<=M.n;q++) qs.push(q);
+    if(Math.abs(M.best-Math.round(M.best))>1e-6){ qs.push(M.best); qs.sort((x,y)=>x-y); }
+    const cur=qs.reduce((a,q)=>Math.abs(q-t)<Math.abs(a-t)?q:a,qs[0]);
+    for(const q of qs){ const v=pi(q), d=M.P-M.mc(q);
+      rows.push(`<tr data-q="${q}" class="${q===cur?"cur":""} ${Math.abs(q-M.best)<1e-6?"best":""}"><td>${fmt(q)}</td><td>${fmt(M.tr(q))}</td><td>${fmt(M.tc(q))}</td><td class="${v>=0?"pos":"neg"}">${fmt(v)}</td><td>${fmt(M.P)}</td><td>${fmt(M.mc(q))}</td><td class="${d>1e-9?"pos":d<-1e-9?"neg":""}">${(d>1e-9?"+":"")+fmt(d)}</td></tr>`); }
     rows.push("</tbody>");
   }
-  $("tb1").innerHTML="<table>"+rows.join("")+"</table>";
+  const box=$("tb1"), keep=box.scrollTop;
+  box.innerHTML="<table>"+rows.join("")+"</table>"; box.scrollTop=keep;
+  const cr=box.querySelector("tr.cur"); // keep the current row in view inside the table box (not the page)
+  if(cr){ const top=cr.offsetTop, h=cr.offsetHeight, hh=box.querySelector("thead").offsetHeight;
+    if(top-hh<box.scrollTop) box.scrollTop=top-hh; else if(top+h>box.scrollTop+box.clientHeight) box.scrollTop=top+h-box.clientHeight; }
   $("tb1").querySelectorAll("tr[data-q]").forEach(r=>r.onclick=()=>{ stop(); st.t=+r.dataset.q; render1(); });
 }
 
