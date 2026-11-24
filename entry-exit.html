@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entry and Exit Explorer</title>
+<!--
+  Entry and Exit Explorer (Topic 7B, perfect competition in the long run). Standalone page, no internet needed.
+  Built 2026-11-16 as a companion to profit_max_explorer.html (same look and helpers).
+  One animation, three panels:
+    1. Your factory: MC, ATC, AVC and the market price (P = MR); shaded box = profit or loss.
+    2. The market: demand and short-run market supply (N identical factories); the equilibrium sets P.
+    3. Over time: the market price and the number of factories.
+  Story: a shock moves P away from min ATC -> profit (loss) -> entry (exit) -> market supply shifts
+  right (left) -> P moves back until P = min ATC, where profit is zero and entry/exit stops.
+  Numbers (all hypothetical, '000 VND, Q in dozens of T-shirts per hour):
+  - Your factory = the smooth cost curves of the profit explorer's Part 2:
+    TC = 72 + 20q - 4q^2 + 0.5q^3, MC = 20 - 8q + 1.5q^2, min AVC 12 at q = 4 (shutdown price),
+    min ATC 26 at q = 6 (exit price, efficient scale). Supply of one factory: q = (8 + sqrt(6P - 56)) / 3 for P >= 12.
+  - Market: N identical factories, Qs = N q(P). Demand Qd = a - 20P.
+    Start: a = 1000, N = 80 -> P = 26, Q = 480 (long-run equilibrium).
+    Demand rises: a = 1180 -> short run P = 32.5; long run N = 110, P = 26, Q = 660.
+    Demand falls: a = 820 -> short run P = 19.8; long run N = 50, P = 26, Q = 300.
+    Too few factories: N = 60 -> P = 30.7 -> N = 80. Too many: N = 100 -> P = 22.1 -> N = 80.
+  - Adjustment rule (for the animation only): the number of factories changes at a speed proportional to the
+    profit per factory, dN/dt = k x profit, so entry/exit is fast when profit is large and slows as profit
+    shrinks. The number of factories is hidden by default (the decks never give a number of firms);
+    a checkbox shows it.
+  Colors: demand and the price line facing the firm blue; supply and MC red; ATC orange; AVC green.
+  Source: Mankiw, N. G. (2021). Principles of Economics, 9th ed., ch. 14 (Firms in Competitive Markets). Cengage.
+-->
+<style>
+:root{
+  --bg:#f7f6f3; --surface:#fcfcfb; --ink:#1d1d1b; --ink2:#55534e; --muted:#8a877f;
+  --line:#dedbd3; --grid:#ebe8e1; --accent:#7a1f2b; --accent-soft:#f4e9ea;
+  --dem:#1f5fbf; --mc:#c62828; --lrs:#7f1010; --atc:#d97706; --avc:#2e7d32;
+  --gain:#0f9d8a; --loss:#d6457a; --mid:#d99a06; --sel:#f3eee2; --input:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+    --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
+    --dem:#6ea6ff; --mc:#f0524f; --lrs:#ff8a80; --atc:#d18a10; --avc:#23a356;
+    --gain:#2cc3ad; --loss:#ee6f9c; --mid:#e0ad2e; --sel:#2a2823; --input:#222220;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --ink:#ecebe7; --ink2:#b9b6ae; --muted:#85827a;
+  --line:#34332f; --grid:#262523; --accent:#e8a0a8; --accent-soft:#2b1e20;
+  --dem:#6ea6ff; --mc:#f0524f; --lrs:#ff8a80; --atc:#d18a10; --avc:#23a356;
+  --gain:#2cc3ad; --loss:#ee6f9c; --mid:#e0ad2e; --sel:#2a2823; --input:#222220;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3","Source Sans Pro","Segoe UI",system-ui,sans-serif}
+header{padding:14px 20px 10px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;max-width:1280px;margin:0 auto}
+h1{font-size:21px;margin:0;font-weight:700}
+header p{margin:0;color:var(--ink2);font-size:14.5px;flex:1 1 300px}
+main{max-width:1280px;margin:0 auto;padding:6px 20px 8px}
+@media (max-width:600px){main,header{padding-left:16px;padding-right:16px}}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:23px;margin:2px 0 6px;line-height:1.2}
+.lead{font-size:17px;color:var(--ink2);margin:0 0 10px;max-width:980px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h3{font-size:15px;margin:0 0 6px}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.card ul{margin:4px 0 0;padding-left:20px}
+.card li{margin:3px 0}
+.key{border-left:4px solid var(--accent);background:var(--accent-soft)}
+.try{border-left:4px solid var(--muted)}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent);min-width:104px;font-weight:600}
+button[aria-pressed=true]{background:var(--sel);border-color:var(--muted);font-weight:600}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+input[type=range]{accent-color:var(--accent)}
+.chk{font-size:14px;color:var(--ink2);display:inline-flex;gap:6px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--bg)}
+.tile .k{font-size:12.5px;color:var(--ink2)}
+.tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.caption{font-size:15.5px;min-height:96px;margin:10px 0 0}
+.caption b{color:var(--accent)}
+.plot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 4px}
+.plot h3{font-size:14.5px;margin:2px 4px;font-weight:600}
+.plot h3 small{font-weight:400;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--ink2);margin:0 4px 2px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:20px;height:3px;border-radius:2px}
+.legend i.box{height:10px;width:14px;opacity:.45;border-radius:2px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--ink2);font-size:12px;font-family:inherit}
+svg .axis{stroke:var(--muted);stroke-width:1}
+svg .gridl{stroke:var(--grid);stroke-width:1}
+svg .zero{stroke:var(--muted);stroke-width:1.2}
+svg .lbl{fill:var(--ink);font-weight:600;font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.small{font-size:13px;color:var(--muted)}
+.c-dem{color:var(--dem);font-weight:700}.c-mc{color:var(--mc);font-weight:700}.c-atc{color:var(--atc);font-weight:700}.c-avc{color:var(--avc);font-weight:700}
+.c-gain{color:var(--gain);font-weight:700}.c-loss{color:var(--loss);font-weight:700}
+.stages{display:flex;flex-direction:column;gap:6px}
+.stage{border:1px solid var(--line);border-left:6px solid var(--zc);border-radius:8px;padding:6px 10px;opacity:.45;font-size:14px;line-height:1.35;cursor:pointer}
+.stage b{color:var(--zc)}
+.stage.on{opacity:1;background:var(--sel);box-shadow:0 0 0 1.5px var(--zc) inset}
+.stage.past{opacity:.8}
+.ctl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:8px 14px}
+.grow3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,0.8fr);gap:10px;height:clamp(280px,calc(100vh - 330px),620px);margin:10px 0 12px}
+.grow3 .plot{display:flex;flex-direction:column;min-height:0;min-width:0;padding:6px 8px 2px}
+.grow3 .hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px}
+.grow3 .hd .legend{margin:0}
+.grow3 .box{flex:1 1 0;min-height:0;position:relative}
+.grow3 .box svg{position:absolute;inset:0;width:100%;height:100%}
+.below{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:1000px){.grow3{grid-template-columns:minmax(0,1fr);height:auto}.grow3 .box{flex:none;height:260px}.grow3 .box.half{height:160px}.below{grid-template-columns:minmax(0,1fr)}}
+footer{max-width:1280px;margin:10px auto 24px;padding:12px 20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Entry and Exit Explorer</h1>
+  <p>Perfect competition in the long run: why profit is driven to zero. Money in '000 VND, Q in dozens of T-shirts per hour.</p>
+  <span class="seg" role="group" aria-label="Theme">
+    <button data-theme-btn="auto" aria-pressed="true">Auto</button>
+    <button data-theme-btn="light" aria-pressed="false">Light</button>
+    <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+  </span>
+</header>
+
+<main>
+  <div class="kicker">Topic 7: the long run</div>
+  <h2>Entry and exit push the price to min ATC</h2>
+  <p class="lead">Many identical factories, and anyone can open or close one in the long run. Pick a shock and press play. Watch the <b>firm</b> (left), the <b>market</b> (middle) and the <b>price over time</b> (right). <b>Where does the price stop, and why there?</b></p>
+
+  <div class="card ctl">
+    <span class="seg" role="group" aria-label="Scenario">
+      <button data-sc="rise" aria-pressed="true">Demand rises</button>
+      <button data-sc="fall" aria-pressed="false">Demand falls</button>
+      <button data-sc="few" aria-pressed="false">Too few factories</button>
+      <button data-sc="many" aria-pressed="false">Too many factories</button>
+    </span>
+    <span class="row" style="margin:0">
+      <button class="primary" id="play">&#9654; Play</button>
+      <button id="nextStage" title="Jump to the next stage">Next stage &#9654;&#9654;</button>
+      <button id="reset" title="Back to the start">&#8634; Reset</button>
+      <span class="seg" role="group" aria-label="Speed">
+        <button data-speed="0.5" aria-pressed="false">0.5&times;</button>
+        <button data-speed="1" aria-pressed="true">1&times;</button>
+        <button data-speed="2" aria-pressed="false">2&times;</button>
+      </span>
+    </span>
+    <input type="range" id="scrub" min="0" max="10" step="0.01" value="0" style="flex:1 1 160px" aria-label="Time">
+    <label class="chk"><input type="checkbox" id="stopSR" checked> Pause at the short run</label>
+    <label class="chk"><input type="checkbox" id="showLR"> Show long-run supply</label>
+    <label class="chk"><input type="checkbox" id="showN"> Show number of factories</label>
+  </div>
+
+  <div class="grow3">
+    <div class="plot"><div class="hd"><h3>Your factory <small>box = profit or loss</small></h3><div class="legend" id="lgF"></div></div><div class="box"><svg id="gF" class="fit" viewBox="0 0 400 300"></svg></div></div>
+    <div class="plot"><div class="hd"><h3>The market <small>N factories</small></h3><div class="legend" id="lgM"></div></div><div class="box"><svg id="gM" class="fit" viewBox="0 0 400 300"></svg></div></div>
+    <div class="plot"><div class="hd"><h3>Over time</h3></div>
+      <div class="box half"><svg id="gP" class="fit" viewBox="0 0 300 150"></svg></div>
+      <div class="box half"><svg id="gN" class="fit" viewBox="0 0 300 150"></svg></div>
+    </div>
+  </div>
+
+  <div class="below">
+    <div class="card">
+      <div class="tiles" id="ro"></div>
+      <p class="caption" id="cap"></p>
+    </div>
+    <div class="card">
+      <h3>Stages <small class="small">(click one to jump there)</small></h3>
+      <div class="stages" id="stages"></div>
+    </div>
+    <div class="col">
+      <div class="card key">
+        <h3>Why profit is driven to zero</h3>
+        <ul>
+          <li><b>P &gt; min ATC</b>: profit &rarr; new factories <b>enter</b> &rarr; market supply shifts right &rarr; P falls.</li>
+          <li><b>P &lt; min ATC</b>: loss &rarr; factories <b>exit</b> &rarr; market supply shifts left &rarr; P rises.</li>
+          <li>It stops only at <b>P = min ATC</b>: zero economic profit, and every factory produces at its <b>efficient scale</b> (P = MC = min ATC).</li>
+          <li>With identical costs and free entry, the <b>long-run supply curve is horizontal</b> at min ATC.</li>
+          <li>Zero <i>economic</i> profit still pays the owner's opportunity cost: accounting profit is positive.</li>
+        </ul>
+      </div>
+      <div class="card try">
+        <h3>Try it</h3>
+        <p>Run "Demand rises" and then "Demand falls". Does the long-run price depend on demand? What about the long-run quantity?</p>
+        <p>Who changes in the long run: the output of each factory, or the number of factories?</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  All numbers are hypothetical (smooth cost curves: min AVC 12 at Q = 4, min ATC 26 at Q = 6; market demand Q = a &minus; 20P). Source: Mankiw, N. G. (2021). <i>Principles of Economics</i>, 9th ed., ch. 14 (Firms in Competitive Markets). Cengage.
+</footer>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fin=Number.isFinite;
+const EPS=1e-9;
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const a in attrs) e.setAttribute(a,attrs[a]); if(parent) parent.appendChild(e); return e; }
+function fmt(x){ if(!fin(x)) return ""; let r=Math.round(x*10)/10; if(Object.is(r,-0)) r=0;
+  return (r<0?"−":"")+Math.abs(r).toLocaleString("en-US",{maximumFractionDigits:1}); }
+function niceStep(range,n){ if(!(range>0)) return 1; const raw=range/n, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;
+  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p; }
+
+// ---------------------------------------------------------------- the factory (smooth hypothetical costs)
+const F={FC:72, minAVC:12, qAVC:4, minATC:26, qE:6, qmax:10,
+  tc:q=>72+20*q-4*q*q+0.5*q*q*q, avc:q=>20-4*q+0.5*q*q, atc:q=>72/q+20-4*q+0.5*q*q, mc:q=>20-8*q+1.5*q*q,
+  q:p=>p>=12-1e-9 ? (8+Math.sqrt(Math.max(0,6*p-56)))/3 : 0};
+const profit=p=>{ const q=F.q(p); return q>0 ? p*q-F.tc(q) : -F.FC; };
+
+// ---------------------------------------------------------------- the market
+const B=20;                                   // demand: Qd = a - 20P
+const QD=(a,p)=>Math.max(0,a-B*p), QS=(N,p)=>N*F.q(p);
+function eqP(N,a){ let lo=F.minAVC, hi=80;
+  if(QS(N,lo)-QD(a,lo)>=0) return lo;
+  for(let i=0;i<60;i++){ const m=(lo+hi)/2; if(QS(N,m)-QD(a,m)>0) hi=m; else lo=m; }
+  return (lo+hi)/2; }
+
+const SC={
+  rise:{a0:1000,a1:1180,N0:80,shift:true, dir:+1},
+  fall:{a0:1000,a1:820, N0:80,shift:true, dir:-1},
+  few: {a0:1000,a1:1000,N0:60,shift:false,dir:+1},
+  many:{a0:1000,a1:1000,N0:100,shift:false,dir:-1}
+};
+
+// precompute the whole path: hold -> (demand shift) -> short run -> entry/exit -> long run
+function simulate(sc){
+  const dt=0.02, path=[]; let a=sc.a0, N=sc.N0;
+  const push=()=>path.push({a,N,P:eqP(N,a)});
+  const hold=s=>{ for(let i=0;i<Math.round(s/dt);i++) push(); };
+  let tShift=null;
+  if(sc.shift){ hold(1.2); tShift=path.length*dt; const n=Math.round(1.6/dt);
+    for(let i=1;i<=n;i++){ const u=i/n, e=u<0.5?2*u*u:1-2*(1-u)*(1-u); a=sc.a0+(sc.a1-sc.a0)*e; push(); } }
+  const tSR=path.length*dt;
+  hold(sc.shift?1.0:1.4);
+  const tAdj=path.length*dt;
+  const Nstar=(sc.a1-B*F.minATC)/F.qE, k=(Nstar-N)/(profit(eqP(N,a))*1.6);
+  for(let i=0;i<4000;i++){ const P=eqP(N,a); if(Math.abs(P-F.minATC)<0.05) break; N+=k*profit(P)*dt; push(); }
+  N=Nstar; const tEnd=path.length*dt;
+  hold(1.5);
+  return {sc,path,dt,T:(path.length-1)*dt,tShift,tSR,tAdj,tEnd,Nstar,
+    P0:path[0].P, Psr:path[Math.round(tAdj/dt)].P, Q0:QD(sc.a0,path[0].P), Q1:QD(sc.a1,F.minATC)};
+}
+
+// ---------------------------------------------------------------- state
+const KEY="entryExitExplorer.v1", THEME_KEY="entryExitExplorer.theme";
+const st={sc:"rise", t:0, speed:1};
+try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&SC[s.sc]) st.sc=s.sc; }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({sc:st.sc})); }catch(e){} }
+let SIM=simulate(SC[st.sc]);
+function at(t){ return SIM.path[Math.min(SIM.path.length-1,Math.max(0,Math.round(t/SIM.dt)))]; }
+function stageOf(t){
+  if(SIM.tShift!==null && t<SIM.tShift-EPS) return 0;
+  if(t<SIM.tAdj-EPS) return 1;
+  if(t<SIM.tEnd-EPS) return 2;
+  return 3;
+}
+
+// ---------------------------------------------------------------- drawing helpers (as in the profit explorer)
+let clipN=0;
+function frame(svg,o){
+  svg.innerHTML="";
+  let W=svg.viewBox.baseVal.width, H=svg.viewBox.baseVal.height;
+  if(svg.classList.contains("fit")){ const rc=svg.getBoundingClientRect(); if(rc.width>50&&rc.height>50){ W=rc.width; H=rc.height; svg.setAttribute("viewBox",`0 0 ${W} ${H}`); } }
+  const m=Object.assign({l:54,r:58,t:12,b:22},o.m||{}), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const ys=niceStep(o.y[1]-o.y[0],Math.max(2,Math.min(o.ny||5,Math.floor(ph/30)))), y0=Math.floor(o.y[0]/ys+EPS)*ys, y1=Math.max(y0+ys,Math.ceil(o.y[1]/ys-EPS)*ys);
+  const X=x=>m.l+x/o.xmax*pw, Y=y=>m.t+ph-(y-y0)/(y1-y0)*ph;
+  const g=el("g",{},svg);
+  for(let y=y0;y<=y1+EPS;y+=ys){
+    el("line",{x1:m.l,x2:m.l+pw,y1:Y(y),y2:Y(y),class:"gridl"},g);
+    if(!o.hideY) el("text",{x:m.l-6,y:Y(y)+4,"text-anchor":"end"},g).textContent=fmt(y);
+  }
+  if(o.xstep) for(let x=0;x<=o.xmax+EPS;x+=o.xstep){
+    el("line",{x1:X(x),x2:X(x),y1:m.t+ph,y2:m.t+ph+4,class:"axis"},g);
+    el("text",{x:X(x),y:m.t+ph+16,"text-anchor":"middle"},g).textContent=fmt(x);
+  }
+  el("line",{x1:m.l,x2:m.l+pw,y1:m.t+ph,y2:m.t+ph,class:"axis"},g);
+  el("line",{x1:m.l,x2:m.l,y1:m.t,y2:m.t+ph,class:"axis"},g);
+  if(o.xlab){ const t=el("text",{x:m.l+pw,y:m.t+ph-5,"text-anchor":"end",class:"lbl"},g); t.style.fontWeight="400"; t.textContent=o.xlab; }
+  if(o.ylab) el("text",{x:m.l+4,y:m.t+2,"dominant-baseline":"hanging"},g).textContent=o.ylab;
+  const id="clip"+(++clipN), defs=el("defs",{},svg), cp=el("clipPath",{id},defs);
+  el("rect",{x:m.l,y:m.t-1,width:pw+1,height:ph+1},cp);
+  const P=el("g",{"clip-path":`url(#${id})`},svg), Top=el("g",{},svg);
+  return {X,Y,P,Top,m,pw,ph,y0,y1};
+}
+// polyline through [x, y] points
+function poly(Fr,pts,color,attrs){
+  const d="M"+pts.map(([x,y])=>Fr.X(x).toFixed(2)+","+Fr.Y(y).toFixed(2)).join("L");
+  return el("path",Object.assign({d,fill:"none",stroke:color,"stroke-width":2.6,"stroke-linejoin":"round"},attrs||{}),Fr.P);
+}
+function fcurve(Fr,f,a,b,color,attrs){ const pts=[]; for(let i=0;i<=200;i++){ const x=a+(b-a)*i/200; pts.push([x,f(x)]); } return poly(Fr,pts,color,attrs); }
+function hline(Fr,y,x0,x1,color,attrs){ return el("line",Object.assign({x1:Fr.X(x0),x2:Fr.X(x1),y1:Fr.Y(y),y2:Fr.Y(y),stroke:color,"stroke-width":1.2},attrs||{}),Fr.P); }
+function vline(Fr,x,y0,y1,color,attrs){ return el("line",Object.assign({x1:Fr.X(x),x2:Fr.X(x),y1:Fr.Y(y0),y2:Fr.Y(y1),stroke:color,"stroke-width":1.2},attrs||{}),Fr.P); }
+function label(Fr,x,y,text,color,anchor){ const t=el("text",{x,y,class:"lbl","text-anchor":anchor||"start"},Fr.Top); t.textContent=text; if(color) t.style.fill=color; return t; }
+function dot(Fr,x,y,color,filled){ el("circle",{cx:Fr.X(x),cy:Fr.Y(y),r:5,fill:filled?color:cssv("--surface"),stroke:color,"stroke-width":2.2},Fr.Top); }
+function legend(id,items){
+  $(id).innerHTML=items.map(it=>`<span><i class="${it.box?"box":""}" style="background:${cssv(it.c)}${it.dash?";background:repeating-linear-gradient(90deg,"+cssv(it.c)+" 0 5px,transparent 5px 8px)":""}"></i>${it.t}</span>`).join("");
+}
+
+// ---------------------------------------------------------------- render
+function render(){
+  st.t=Math.min(Math.max(st.t,0),SIM.T);
+  const t=st.t, s=at(t), P=s.P, N=s.N, a=s.a, stg=stageOf(t), sc=SIM.sc;
+  const q=F.q(P), pf=profit(P), Q=QD(a,P), showN=$("showN").checked, done=stg===3;
+  const showLR=$("showLR").checked||done;
+  const c={dem:cssv("--dem"),mc:cssv("--mc"),lrs:cssv("--lrs"),atc:cssv("--atc"),avc:cssv("--avc"),gain:cssv("--gain"),loss:cssv("--loss"),ink:cssv("--ink"),mut:cssv("--muted")};
+  const ymax=50;
+
+  // ---- panel 1: the factory
+  const G=frame($("gF"),{xmax:F.qmax,xstep:1,y:[0,ymax],xlab:"q (dozens per hour)",ylab:"'000 VND per dozen",m:{r:70}});
+  if(q>0){ const A=F.atc(q), top=Math.max(A,P), bot=Math.min(A,P), col=P>=A?c.gain:c.loss;
+    el("rect",{x:G.X(0),y:G.Y(top),width:G.X(q)-G.X(0),height:Math.max(0.5,G.Y(bot)-G.Y(top)),fill:col,"fill-opacity":0.3,stroke:col,"stroke-width":1.2},G.P);
+    hline(G,A,0,q,c.atc,{"stroke-dasharray":"3 3"});
+    if(Math.abs(pf)>0.5) label(G,(G.X(0)+G.X(q))/2,(G.Y(top)+G.Y(bot))/2+4,(pf>=0?"Profit ":"Loss ")+fmt(Math.abs(pf)),col,"middle");
+  }
+  fcurve(G,F.avc,0.3,F.qmax,c.avc); fcurve(G,F.atc,1.2,F.qmax,c.atc); fcurve(G,F.mc,0.3,F.qmax,c.mc);
+  dot(G,F.qE,F.minATC,c.atc,false);
+  label(G,G.X(F.qE)+8,G.Y(F.minATC)+18,"min ATC",c.atc);
+  if(Math.abs(SIM.P0-P)>0.3) hline(G,SIM.P0,0,F.qmax,c.dem,{"stroke-dasharray":"5 5","stroke-opacity":0.45,"stroke-width":1.8});
+  hline(G,P,0,F.qmax,c.dem,{"stroke-width":2.8});
+  label(G,G.X(F.qmax)+6,G.Y(P)+4,"P = "+fmt(P),c.dem);
+  if(Math.abs(SIM.P0-P)>2.5) label(G,G.X(F.qmax)+6,G.Y(SIM.P0)+4,"P start",c.mut);
+  const qTop=(8+Math.sqrt(64-6*(20-ymax)))/3;
+  label(G,G.X(qTop)+6,G.Y(ymax)+14,"MC",c.mc);
+  label(G,G.X(F.qmax)-4,G.Y(F.atc(F.qmax))-8,"ATC",c.atc,"end");
+  label(G,G.X(F.qmax)-4,G.Y(F.avc(F.qmax))+16,"AVC",c.avc,"end");
+  if(q>0){ vline(G,q,0,P,c.ink,{"stroke-dasharray":"3 3"}); dot(G,q,P,c.ink,true); label(G,G.X(q)-5,G.Y(3),"q = "+fmt(q),c.ink,"end"); }
+  legend("lgF",[{c:"--dem",t:"P = MR"},{c:"--mc",t:"MC"},{c:"--atc",t:"ATC"},{c:"--avc",t:"AVC"},{c:"--gain",t:"Profit",box:1},{c:"--loss",t:"Loss",box:1}]);
+
+  // ---- panel 2: the market
+  const xmM=1000, M=frame($("gM"),{xmax:xmM,xstep:200,y:[0,ymax],xlab:"Q (dozens per hour)",ylab:"'000 VND per dozen",m:{r:60}});
+  const Spts=n=>{ const pts=[]; for(let i=0;i<=120;i++){ const p=F.minAVC+(ymax+5-F.minAVC)*i/120; pts.push([QS(n,p),p]); } return pts; };
+  const Dpts=aa=>[[0,aa/B],[aa,0]];
+  const moved=Math.abs(N-SIM.sc.N0)>0.5, shifted=Math.abs(a-sc.a0)>1;
+  if(showLR){ hline(M,F.minATC,0,xmM,c.lrs,{"stroke-width":3.2,"stroke-opacity":done?0.9:0.55});
+    label(M,M.X(xmM)+4,M.Y(F.minATC)-4,"LR",c.lrs); label(M,M.X(xmM)+4,M.Y(F.minATC)+10,"supply",c.lrs); }
+  else { hline(M,F.minATC,0,xmM,c.atc,{"stroke-dasharray":"2 4"}); label(M,M.X(xmM)+4,M.Y(F.minATC)+4,"min ATC",c.atc); }
+  // starting curves (faded) once things move
+  if(shifted){ poly(M,Dpts(sc.a0),c.dem,{"stroke-opacity":0.3,"stroke-dasharray":"6 5"}); label(M,M.X(sc.a0-6*B)+6,M.Y(6)+4,"D1",c.dem).style.opacity=0.6; }
+  if(moved){ poly(M,Spts(sc.N0),c.mc,{"stroke-opacity":0.3,"stroke-dasharray":"6 5"}); const p=ymax-3; label(M,M.X(QS(sc.N0,p))+6,M.Y(p)+4,"S1",c.mc).style.opacity=0.6; }
+  poly(M,Dpts(a),c.dem); poly(M,Spts(N),c.mc);
+  label(M,M.X(a-6*B)+6,M.Y(6)+4,shifted?"D2":(sc.shift?"D1":"D"),c.dem);
+  { const p=ymax-3; label(M,M.X(QS(N,p))+6,M.Y(p)+4,moved?"S2":"S1",c.mc); }
+  // long-run equilibrium points
+  if(showLR){ if(sc.shift) dot(M,SIM.Q0,SIM.P0,c.lrs,false); if(done) dot(M,SIM.Q1,F.minATC,c.lrs,false); }
+  hline(M,P,0,Q,c.ink,{"stroke-dasharray":"3 3"}); vline(M,Q,0,P,c.ink,{"stroke-dasharray":"3 3"});
+  dot(M,Q,P,c.ink,true);
+  label(M,M.X(Q)+8,M.Y(P)-8,"P = "+fmt(P)+", Q = "+fmt(Q),c.ink);
+  legend("lgM",[{c:"--dem",t:"Demand"},{c:"--mc",t:"SR market supply"},showLR?{c:"--lrs",t:"LR supply"}:{c:"--atc",t:"min ATC",dash:1}]);
+
+  // ---- panel 3: over time (price, then number of factories)
+  const path=SIM.path, iNow=Math.round(t/SIM.dt), stepI=Math.max(1,Math.floor(path.length/300));
+  const tp=(f)=>{ const pts=[]; for(let i=0;i<=iNow;i+=stepI) pts.push([i*SIM.dt,f(path[i])]); pts.push([iNow*SIM.dt,f(path[Math.min(iNow,path.length-1)])]); return pts; };
+  const marks=Fr=>{ [SIM.tShift,SIM.tAdj,SIM.tEnd].forEach(x=>{ if(x!==null) vline(Fr,x,Fr.y0,Fr.y1,c.mut,{"stroke-dasharray":"2 4","stroke-width":1}); }); };
+  const TP=frame($("gP"),{xmax:SIM.T,y:[14,36],ny:3,ylab:"Price P",m:{l:36,r:58,t:10,b:10}});
+  marks(TP);
+  hline(TP,F.minATC,0,SIM.T,c.atc,{"stroke-dasharray":"5 4"});
+  label(TP,TP.X(SIM.T)+4,TP.Y(F.minATC)+4,"min ATC",c.atc);
+  poly(TP,path.map((r,i)=>[i*SIM.dt,r.P]).filter((_,i)=>i%stepI===0),c.dem,{"stroke-opacity":0.15,"stroke-width":2});
+  poly(TP,tp(r=>r.P),c.dem); dot(TP,t,P,c.dem,true);
+  const lo=Math.min(SIM.sc.N0,SIM.Nstar), hi=Math.max(SIM.sc.N0,SIM.Nstar), pad=(hi-lo)*0.25;
+  const TN=frame($("gN"),{xmax:SIM.T,y:[lo-pad,hi+pad],ny:3,hideY:!showN,ylab:"Number of factories",xlab:"Time →",m:{l:36,r:58,t:10,b:12}});
+  marks(TN);
+  poly(TN,path.map((r,i)=>[i*SIM.dt,r.N]).filter((_,i)=>i%stepI===0),c.mc,{"stroke-opacity":0.15,"stroke-width":2});
+  poly(TN,tp(r=>r.N),c.mc); dot(TN,t,N,c.mc,true);
+  label(TN,TN.X(SIM.T)+4,TN.Y(SIM.Nstar)+4,sc.dir>0?"entry":"exit",c.mc);
+
+  // ---- readouts
+  const tiles=[["Market P",fmt(P),c.dem],["Market Q",fmt(Q)],["Your q",fmt(q)],[pf>=-0.05?"Profit":"Loss",fmt(Math.abs(pf)<0.05?0:pf),pf>0.05?c.gain:pf<-0.05?c.loss:c.ink],
+    ["Factories",showN?fmt(Math.round(N)):(Math.abs(N-sc.N0)<0.5?"Start":(N>sc.N0?"+":"−")+fmt(Math.abs(N/sc.N0-1)*100)+"%"),c.mc]];
+  $("ro").innerHTML=tiles.map(([k,v,col])=>`<div class="tile"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:""}>${v}</div></div>`).join("");
+  $("cap").innerHTML=caption(t,s,stg);
+  stages(stg);
+  const sl=$("scrub"); sl.max=SIM.T; sl.value=t;
+  $("play").innerHTML=playing?"&#10074;&#10074; Pause":"&#9654; Play";
+  document.querySelectorAll("[data-sc]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sc===st.sc));
+}
+
+function nfac(N0,N1){ return $("showN").checked ? ` (${fmt(Math.round(N0))} &rarr; ${fmt(Math.round(N1))} factories)` : ""; }
+function caption(t,s,stg){
+  const sc=SIM.sc, P=s.P, q=F.q(P), pf=profit(P), up=sc.dir>0;
+  if(stg===0) return `<b>Long-run equilibrium.</b> P = ${fmt(P)} = min ATC. Each factory makes ${fmt(F.qE)} dozen per hour, its efficient scale, and earns <b>zero</b> economic profit. Nobody wants to enter or exit. Press play.`;
+  if(stg===1){
+    if(sc.shift && t<SIM.tSR-EPS) return up
+      ? `<b>Peak season: demand shifts right</b> (D1 &rarr; D2). In the short run the number of factories is fixed, so the price rises <b>along</b> the short-run supply curve S1.`
+      : `<b>Off season: demand shifts left</b> (D1 &rarr; D2). In the short run the number of factories is fixed, so the price falls <b>along</b> the short-run supply curve S1.`;
+    const lead = sc.shift ? "<b>Short run.</b> " : (up ? "<b>Too few factories</b> for this demand. " : "<b>Too many factories</b> for this demand. ");
+    return up
+      ? lead+`P = ${fmt(P)} &gt; min ATC = ${fmt(F.minATC)}. Each factory produces where P = MC (${fmt(q)} dozen) and earns a profit of <b class="c-gain">${fmt(pf)}</b> per hour. Profit attracts <b>new factories</b>.`
+      : lead+`P = ${fmt(P)} &lt; min ATC = ${fmt(F.minATC)} (but above min AVC = ${fmt(F.minAVC)}, so factories keep sewing for now). Each factory makes ${fmt(q)} dozen and loses <b class="c-loss">${fmt(-pf)}</b> per hour. When their leases end, some factories <b>exit</b>.`;
+  }
+  if(stg===2) return up
+    ? `<b>Entry.</b> New factories open &rarr; the market supply curve shifts <b>right</b> &rarr; the price falls to ${fmt(P)}. Profit per factory shrinks to <b class="c-gain">${fmt(pf)}</b>. As long as P &gt; ${fmt(F.minATC)}, there is still profit to chase, so entry continues (more slowly).`
+    : `<b>Exit.</b> Factories close &rarr; the market supply curve shifts <b>left</b> &rarr; the price rises to ${fmt(P)}. The loss per factory shrinks to <b class="c-loss">${fmt(-pf)}</b>. As long as P &lt; ${fmt(F.minATC)}, factories keep leaving (more slowly).`;
+  const dQ = Math.abs(SIM.Q1-SIM.Q0)>0.5 ? `Market output went from ${fmt(SIM.Q0)} to ${fmt(SIM.Q1)} dozen` : `Market output is ${fmt(SIM.Q1)} dozen`;
+  return `<b>New long-run equilibrium.</b> P = ${fmt(F.minATC)} = min ATC again: profit is <b>zero</b>, so ${up?"entry":"exit"} stops. Each factory is back at its efficient scale, ${fmt(F.qE)} dozen. ${dQ}${nfac(SIM.sc.N0,SIM.Nstar)}: ${sc.shift?"the change came from the <b>number of factories</b>, not the price. The long-run supply curve is <b>horizontal</b> at min ATC.":"only the number of factories changed."}`;
+}
+
+function stages(stg){
+  const sc=SIM.sc, up=sc.dir>0, cG=cssv("--gain"), cL=cssv("--loss"), cA=cssv("--atc"), cD=cssv("--dem");
+  const L=[];
+  if(sc.shift) L.push([0,cA,"Start:","long-run equilibrium, P = min ATC, zero profit",0]);
+  L.push([1,up?cG:cL, sc.shift?(up?"Demand rises:":"Demand falls:"):(up?"Too few factories:":"Too many factories:"),
+    (up?"P &gt; min ATC, profit":"P &lt; min ATC, loss")+" (short run, N fixed)", sc.shift?SIM.tShift:0]);
+  L.push([2,cD, up?"Entry:":"Exit:", up?"supply shifts right, P falls":"supply shifts left, P rises", SIM.tAdj]);
+  L.push([3,cA,"Long run:","P = min ATC, zero profit, "+(up?"entry":"exit")+" stops", SIM.tEnd]);
+  $("stages").innerHTML=L.map(([k,col,h,txt,tt])=>`<div class="stage${k===stg?" on":k<stg?" past":""}" style="--zc:${col}" data-t="${tt}"><b>${h}</b> ${txt}</div>`).join("");
+  $("stages").querySelectorAll("[data-t]").forEach(d=>d.onclick=()=>{ stop(); st.t=+d.dataset.t+(SIM.sc.shift&&+d.dataset.t===SIM.tShift?SIM.tSR-SIM.tShift:0); render(); });
+}
+
+// ---------------------------------------------------------------- animation
+let playing=false, raf=null, lastTs=0;
+function stop(){ playing=false; if(raf) cancelAnimationFrame(raf); raf=null; $("play").innerHTML="&#9654; Play"; }
+function play(){
+  if(playing){ stop(); render(); return; }
+  if(st.t>=SIM.T-1e-6) st.t=0;
+  playing=true; lastTs=performance.now(); raf=requestAnimationFrame(tick); render();
+}
+function tick(ts){
+  if(!playing) return;
+  const dt=Math.min(0.1,(ts-lastTs)/1000); lastTs=ts;
+  const prev=st.t, nt=prev+dt*st.speed;
+  if($("stopSR").checked && prev<SIM.tAdj-SIM.dt && nt>=SIM.tAdj-1e-6){ st.t=SIM.tAdj-0.5*SIM.dt; stop(); render(); return; }
+  if(prev<SIM.tEnd-1e-6 && nt>=SIM.tEnd-1e-6){ st.t=SIM.tEnd; stop(); render(); return; }
+  if(nt>=SIM.T){ st.t=SIM.T; stop(); render(); return; }
+  st.t=nt; render();
+  raf=requestAnimationFrame(tick);
+}
+function nextStage(){ stop();
+  const b=[SIM.tShift,SIM.tSR,SIM.tAdj,SIM.tEnd,SIM.T].filter(x=>x!==null&&x>st.t+1e-6);
+  st.t=b.length?b[0]:SIM.T; render(); }
+
+// ---------------------------------------------------------------- wiring
+$("play").onclick=play;
+$("nextStage").onclick=nextStage;
+$("reset").onclick=()=>{ stop(); st.t=0; render(); };
+$("scrub").oninput=e=>{ stop(); st.t=+e.target.value; render(); };
+["showLR","showN"].forEach(id=>$(id).onchange=render);
+document.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{ stop(); st.sc=b.dataset.sc; SIM=simulate(SC[st.sc]); st.t=0; save(); render(); });
+document.querySelectorAll("[data-speed]").forEach(b=>b.onclick=()=>{ st.speed=+b.dataset.speed;
+  document.querySelectorAll("[data-speed]").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.speed===st.speed)); });
+document.addEventListener("keydown",e=>{
+  const t=e.target; if(e.altKey||e.ctrlKey||e.metaKey) return;
+  if(t && (t.tagName==="INPUT"&&t.type!=="checkbox"||t.tagName==="SELECT"||t.tagName==="TEXTAREA")) return;
+  if(e.key===" "){ e.preventDefault(); play(); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); stop(); st.t+=0.25; render(); }
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); stop(); st.t-=0.25; render(); }
+});
+function applyTheme(th){
+  if(th==="auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme",th);
+  document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.themeBtn===th));
+  try{ localStorage.setItem(THEME_KEY,th); }catch(e){}
+  render();
+}
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeBtn));
+
+// ---------------------------------------------------------------- start
+let th0="auto"; try{ th0=localStorage.getItem(THEME_KEY)||"auto"; }catch(e){}
+if(th0!=="auto") document.documentElement.setAttribute("data-theme",th0);
+document.querySelectorAll("[data-theme-btn]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.themeBtn===th0));
+render();
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+let rzT=null;
+if(window.ResizeObserver){ const sizes=new Map(); const ro=new ResizeObserver(es=>{ let changed=false;
+  es.forEach(e=>{ const k=Math.round(e.contentRect.width)+"x"+Math.round(e.contentRect.height); if(sizes.get(e.target)!==k){ sizes.set(e.target,k); changed=true; } });
+  if(changed && !playing){ clearTimeout(rzT); rzT=setTimeout(render,30); } });
+  document.querySelectorAll("svg.fit").forEach(sv=>ro.observe(sv)); }
+else window.addEventListener("resize",()=>{ clearTimeout(rzT); rzT=setTimeout(render,80); });
+})();
+</script>
+</body>
+</html>
